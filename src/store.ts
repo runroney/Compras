@@ -233,9 +233,18 @@ export function newList(opts: { copyFrom?: string | 'current'; onlyPending?: boo
   for (const i of src) {
     if (opts.onlyPending && i.checked) continue
     const pr = i.product_id ? state.tables.products[i.product_id] : undefined
-    upsert('list_items', { ...i, id: uid(), list_id: nl.id, checked: false, paid_price: null, est_price: pr?.price ?? i.paid_price ?? i.est_price, sort: Date.now() })
+    upsert('list_items', { ...i, id: uid(), list_id: nl.id, checked: false, paid_price: null, est_price: pr?.price ?? i.paid_price ?? i.est_price, sort: i.sort })
   }
   return nl
+}
+/** Grava a nova ordem de uma categoria. Itens escondidos por filtro ficam onde estavam; só os visíveis trocam de lugar entre si. */
+export function reorderItems(category: string, visibleIds: string[]) {
+  const list = activeList(); if (!list) return
+  const all = itemsOf(list.id).filter(i => i.category === category).sort((a, b) => a.sort - b.sort || a.name.localeCompare(b.name))
+  const vis = new Set(visibleIds)
+  const queue = visibleIds.filter(id => all.some(i => i.id === id))
+  const final = all.map(i => (vis.has(i.id) ? state.tables.list_items[queue.shift()!] : i))
+  final.forEach((it, idx) => { if (it && it.sort !== idx * 1024) upsert('list_items', { ...it, sort: idx * 1024 }) })
 }
 export function moveCategory(id: string, dir: -1 | 1) {
   const cats = categoriesSorted(); const i = cats.findIndex(c => c.id === id); const j = i + dir
@@ -265,7 +274,7 @@ export function importRows(rows: ImportRow[], opts: { categories?: { name: strin
     if (opts.addToList && r.qty && r.qty > 0) {
       const list = ensureList()
       if (!itemsOf(list.id).some(i => i.product_id === p!.id)) {
-        upsert('list_items', { id: uid(), list_id: list.id, product_id: p.id, name: p.name, category: p.category, qty: r.qty, unit: p.unit, est_price: p.price, paid_price: null, checked: false, sort: Date.now() })
+        upsert('list_items', { id: uid(), list_id: list.id, product_id: p.id, name: p.name, category: p.category, qty: r.qty, unit: p.unit, est_price: p.price, paid_price: null, checked: false, sort: itemsOf(list.id).length * 1024 })
         rep.naLista++
       }
     }

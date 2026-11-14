@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useState, type ReactNode } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { configured } from './remote'
 import {
   activeList, addItem, categoriesSorted, createHousehold, findProduct, itemsOf, joinHousehold, lineEst, live, moveCategory,
-  newList, setPaid, signIn, signOut, signUp, softDelete, syncNow, toggleItem, totals, upsert, uid, useApp,
+  newList, reorderItems, setPaid, signIn, signOut, signUp, softDelete, syncNow, toggleItem, totals, upsert, uid, useApp,
 } from './store'
 import { exportWorkbook, importWorkbook } from './io'
 import seed from './seed.json'
@@ -105,6 +105,70 @@ function ListScreen({ openSettings }: { openSettings: () => void }) {
   const [q, setQ] = useState('')
   const [adding, setAdding] = useState(false)
   const [edit, setEdit] = useState<string | null>(null)
+  // Arrastar para reordenar: as linhas NÃO mudam de lugar no DOM durante o gesto (só se deslocam com transform);
+  // a ordem nova é gravada uma vez, ao soltar. Assim o navegador não perde o controle do dedo.
+  const [drag, setDrag] = useState<{ cat: string; id: string; ids: string[]; from: number; to: number; dy: number; pitch: number } | null>(null)
+  const scrollRef = useRef<HTMLDivElement>(null)
+  const dragRef = useRef<{ startY: number; startScroll: number; centers: number[]; lastY: number } | null>(null)
+  const canDrag = !q && filter !== 'ok'
+  const dragId = drag?.id
+  const update = useCallback(() => {
+    const m = dragRef.current, sc = scrollRef.current
+    if (!m || !sc) return
+    setDrag(d => {
+      if (!d) return d
+      const dy = m.lastY - m.startY + (sc.scrollTop - m.startScroll)
+      const center = m.centers[d.from] + dy
+      let to = 0
+      m.centers.forEach((c, j) => { if (j !== d.from && c < center) to++ })
+      return dy === d.dy && to === d.to ? d : { ...d, dy, to }
+    })
+  }, [])
+  const finish = useCallback((commit: boolean) => {
+    dragRef.current = null
+    setDrag(d => {
+      if (d && commit && d.to !== d.from) {
+        const ids = d.ids.filter(x => x !== d.id); ids.splice(d.to, 0, d.id)
+        reorderItems(d.cat, ids)
+      }
+      return null
+    })
+  }, [])
+  useEffect(() => {
+    if (!dragId) return
+    const mv = (e: PointerEvent) => { if (dragRef.current) { dragRef.current.lastY = e.clientY; update() } }
+    const up = () => finish(true), cancel = () => finish(false)
+    window.addEventListener('pointermove', mv); window.addEventListener('pointerup', up); window.addEventListener('pointercancel', cancel)
+    let raf = 0 // rolagem automática perto das bordas
+    const tick = () => {
+      const sc = scrollRef.current, m = dragRef.current
+      if (sc && m) {
+        const r = sc.getBoundingClientRect()
+        if (m.lastY < r.top + 70) sc.scrollTop -= 12; else if (m.lastY > r.bottom - 70) sc.scrollTop += 12
+        update()
+      }
+      raf = requestAnimationFrame(tick)
+    }
+    raf = requestAnimationFrame(tick)
+    return () => { window.removeEventListener('pointermove', mv); window.removeEventListener('pointerup', up); window.removeEventListener('pointercancel', cancel); cancelAnimationFrame(raf) }
+  }, [dragId, update, finish])
+  const startDrag = (e: React.PointerEvent, cat: string, id: string, ids: string[]) => {
+    e.preventDefault()
+    const sc = scrollRef.current; if (!sc) return
+    const rows = ids.map(x => document.querySelector<HTMLElement>(`[data-itemid="${CSS.escape(x)}"]`))
+    if (rows.some(r => !r)) return
+    const rects = rows.map(r => r!.getBoundingClientRect())
+    const from = ids.indexOf(id)
+    dragRef.current = { startY: e.clientY, startScroll: sc.scrollTop, lastY: e.clientY, centers: rects.map(r => r.top + r.height / 2) }
+    setDrag({ cat, id, ids, from, to: from, dy: 0, pitch: rects[from].height + 10 })
+  }
+  const shiftOf = (catName: string, k: number) => {
+    if (!drag || drag.cat !== catName) return undefined
+    if (k === drag.from) return `translateY(${drag.dy}px)`
+    if (drag.from < drag.to && k > drag.from && k <= drag.to) return `translateY(${-drag.pitch}px)`
+    if (drag.from > drag.to && k >= drag.to && k < drag.from) return `translateY(${drag.pitch}px)`
+    return undefined
+  }
   const list = activeList()
   const items = list ? itemsOf(list.id) : []
   const t = totals(items)
@@ -122,22 +186,24 @@ function ListScreen({ openSettings }: { openSettings: () => void }) {
       <div className="bar"><i style={{ width: pct + '%' }} /></div>
       <div className="tot"><span>Estimado {brl(t.est)}{t.noPrice ? '*' : ''}</span><span>Gasto {brl(t.spent)}</span></div>
     </div>
-    <div className="scroll">
+    <div className="scroll" ref={scrollRef}>
       <div className="chips">
         {([['falta', `Faltam ${t.total - t.done}`], ['ok', `Comprados ${t.done}`], ['todos', 'Todos']] as const).map(([k, l]) => <button key={k} className={'chip' + (filter === k ? ' on' : '')} onClick={() => setFilter(k)}>{l}</button>)}
       </div>
       <input className="search" placeholder="Buscar na lista" value={q} onChange={e => setQ(e.target.value)} />
       {items.length === 0 && <div className="empty">Lista vazia. Toque no + para adicionar o primeiro produto.</div>}
       {items.length > 0 && shown.length === 0 && <div className="empty">{filter === 'falta' ? 'Nada faltando. Compras concluídas! 🎉' : 'Nenhum item aqui.'}</div>}
-      {groups.filter(g => g.its.length).map(({ c, its }) => <div key={c.id}>
+      {groups.filter(g => g.its.length).map(({ c, its }) => <div key={c.id} data-grp={c.name}>
         <div className="cat"><span>{c.name}</span><span>{its.filter(i => i.checked).length}/{its.length}</span></div>
-        {its.map(i => <div key={i.id} className={'it' + (i.checked ? ' done' : '')} style={{ ['--c' as any]: c.color }} data-testid="item">
+        {its.map((i, k) => <div key={i.id} data-itemid={i.id} className={'it' + (i.checked ? ' done' : '') + (drag?.id === i.id ? ' dragging' : '')}
+          style={{ ['--c' as any]: c.color, transform: shiftOf(c.name, k), transition: drag && drag.id !== i.id ? 'transform .15s' : undefined }} data-testid="item">
           <button className="cb" onClick={() => toggleItem(i.id)} aria-label={i.checked ? 'Desmarcar' : 'Marcar como comprado'}>{i.checked ? '✓' : ''}</button>
           <div className="mid" onClick={() => setEdit(i.id)}>
             <div className="nm">{i.name}</div>
             <div className="meta">{fmtQty(i.qty)} {i.unit}{i.est_price != null ? ` × ${brl(i.est_price)}` : ' · sem preço'}{i.paid_price != null ? ` · pago ${brl(i.paid_price)}` : ''}</div>
           </div>
           <div className="val">{i.est_price != null ? brl(lineEst(i)) : ''}</div>
+          {canDrag && <div className="grip" role="button" aria-label={`Arrastar ${i.name}`} data-testid="grip" onPointerDown={e => startDrag(e, c.name, i.id, its.map(x => x.id))}>⠿</div>}
         </div>)}
       </div>)}
     </div>
