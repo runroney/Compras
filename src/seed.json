@@ -1,0 +1,2445 @@
+{
+"categories": [
+{
+"name": "Bebidas",
+"color": "#26C6DA"
+},
+{
+"name": "Limpeza",
+"color": "#FFE082"
+},
+{
+"name": "Higiene Pessoal",
+"color": "#B39DDB"
+},
+{
+"name": "Alimentação",
+"color": "#A5D6A7"
+},
+{
+"name": "Lanche",
+"color": "#FFC107"
+},
+{
+"name": "Padaria",
+"color": "#D7A86E"
+},
+{
+"name": "Hortifruti",
+"color": "#66BB6A"
+},
+{
+"name": "Carnes e Frios",
+"color": "#90B4F0"
+},
+{
+"name": "Laticínios",
+"color": "#80DEEA"
+},
+{
+"name": "Congelados",
+"color": "#81D4FA"
+},
+{
+"name": "Cuidados com a Casa",
+"color": "#90A4AE"
+},
+{
+"name": "Outros",
+"color": "#CFD8DC"
+}
+],
+"products": [
+{
+"name": "Agua Mineral c/ gás",
+"category": "Bebidas",
+"price": 1.39,
+"unit": "un"
+},
+{
+"name": "Isotônico",
+"category": "Bebidas",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Leite litro de SAQUINHO",
+"category": "Bebidas",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Leite litro cx c/12 zero lac.",
+"category": "Bebidas",
+"price": 6.8,
+"unit": "un"
+},
+{
+"name": "Suco concentrado",
+"category": "Bebidas",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Suco garrafa 1.5l \"Aurora\"",
+"category": "Bebidas",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Água sanitária",
+"category": "Limpeza",
+"price": 6.75,
+"unit": "un"
+},
+{
+"name": "Álcool",
+"category": "Limpeza",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Amaciante pequeno azul",
+"category": "Limpeza",
+"price": 7.49,
+"unit": "un"
+},
+{
+"name": "Bicarbonato de sódio pct",
+"category": "Limpeza",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Buchinha de pia pct",
+"category": "Limpeza",
+"price": 5.99,
+"unit": "un"
+},
+{
+"name": "Desinfetante LIMÃO unicfr",
+"category": "Limpeza",
+"price": 8.89,
+"unit": "un"
+},
+{
+"name": "Detergente uni.",
+"category": "Limpeza",
+"price": 3.15,
+"unit": "un"
+},
+{
+"name": "Esponja de aço",
+"category": "Limpeza",
+"price": 1.55,
+"unit": "un"
+},
+{
+"name": "Fósforo",
+"category": "Limpeza",
+"price": 3.89,
+"unit": "un"
+},
+{
+"name": "Lustra móveis",
+"category": "Limpeza",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Papel toalha",
+"category": "Limpeza",
+"price": 4.9,
+"unit": "un"
+},
+{
+"name": "Plástico filme",
+"category": "Limpeza",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Sabão em pedra pct. BRANCA",
+"category": "Limpeza",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Sabão em pó cx.",
+"category": "Limpeza",
+"price": 17.9,
+"unit": "un"
+},
+{
+"name": "Saco de lixo 100ml",
+"category": "Limpeza",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Sapólio Líquido (CIF)",
+"category": "Limpeza",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Esponja de banho",
+"category": "Limpeza",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Cif limpeza profissional",
+"category": "Limpeza",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Condicionador uni.",
+"category": "Higiene Pessoal",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Creme dental",
+"category": "Higiene Pessoal",
+"price": 6.36,
+"unit": "un"
+},
+{
+"name": "CREME CABELO SOFIA",
+"category": "Higiene Pessoal",
+"price": 12.9,
+"unit": "un"
+},
+{
+"name": "Creme para o corpo",
+"category": "Higiene Pessoal",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Escova de dente",
+"category": "Higiene Pessoal",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Fio dental",
+"category": "Higiene Pessoal",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Papel Higiênico pct",
+"category": "Higiene Pessoal",
+"price": 14.9,
+"unit": "un"
+},
+{
+"name": "Sabonete 1 pct",
+"category": "Higiene Pessoal",
+"price": 1.95,
+"unit": "un"
+},
+{
+"name": "Sabonete Líquido",
+"category": "Higiene Pessoal",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Shampoo uni.",
+"category": "Higiene Pessoal",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Creme Tande",
+"category": "Higiene Pessoal",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Açúcar 2kg",
+"category": "Alimentação",
+"price": 6.29,
+"unit": "un"
+},
+{
+"name": "Arroz 5kg",
+"category": "Alimentação",
+"price": 22.55,
+"unit": "un"
+},
+{
+"name": "Atum",
+"category": "Alimentação",
+"price": 8.65,
+"unit": "un"
+},
+{
+"name": "Ervilha",
+"category": "Alimentação",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Extrato de tomate",
+"category": "Alimentação",
+"price": 1.99,
+"unit": "un"
+},
+{
+"name": "MIX Farinha de Arroz",
+"category": "Alimentação",
+"price": 12.19,
+"unit": "un"
+},
+{
+"name": "Amido de milho - Maizena 500g",
+"category": "Alimentação",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Farinha de mandioca",
+"category": "Alimentação",
+"price": 6.65,
+"unit": "un"
+},
+{
+"name": "Farinha de milho flocos GROSSA",
+"category": "Alimentação",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Feijão",
+"category": "Alimentação",
+"price": 7.95,
+"unit": "un"
+},
+{
+"name": "Feijão Preto",
+"category": "Alimentação",
+"price": 8.25,
+"unit": "un"
+},
+{
+"name": "Fubá",
+"category": "Alimentação",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Grão de Bico pct",
+"category": "Alimentação",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Lentilha",
+"category": "Alimentação",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Macarrão Espaguete",
+"category": "Alimentação",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Macarrão Parafuso",
+"category": "Alimentação",
+"price": 5.95,
+"unit": "un"
+},
+{
+"name": "Milho verde lata",
+"category": "Alimentação",
+"price": 2.99,
+"unit": "un"
+},
+{
+"name": "Molho de tomate",
+"category": "Alimentação",
+"price": 1.59,
+"unit": "un"
+},
+{
+"name": "Óleo de cozinha",
+"category": "Alimentação",
+"price": 7.39,
+"unit": "un"
+},
+{
+"name": "Azeite de oliva extravirgem P",
+"category": "Alimentação",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Sal",
+"category": "Alimentação",
+"price": 2.49,
+"unit": "un"
+},
+{
+"name": "Sardinha",
+"category": "Alimentação",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Vinagre de Álcool",
+"category": "Alimentação",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Azeitona",
+"category": "Alimentação",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Granulado ou gotas de chocolate",
+"category": "Alimentação",
+"price": 11.9,
+"unit": "un"
+},
+{
+"name": "Cacau ou chocolate em pó",
+"category": "Lanche",
+"price": 19.9,
+"unit": "un"
+},
+{
+"name": "Achocolatado",
+"category": "Lanche",
+"price": 17.9,
+"unit": "un"
+},
+{
+"name": "Bisnaguinha",
+"category": "Lanche",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Leite de coco",
+"category": "Lanche",
+"price": 2.95,
+"unit": "un"
+},
+{
+"name": "Torradinha pacote",
+"category": "Lanche",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Bolacha",
+"category": "Lanche",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Café soluvel",
+"category": "Lanche",
+"price": 7.85,
+"unit": "un"
+},
+{
+"name": "Café",
+"category": "Lanche",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Coco ralado pct. 200g",
+"category": "Lanche",
+"price": 1.89,
+"unit": "un"
+},
+{
+"name": "Creme de leite Zero lac.",
+"category": "Lanche",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Erva Tereré",
+"category": "Lanche",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Fermento químico em pó tipo ROYAL",
+"category": "Lanche",
+"price": 3.59,
+"unit": "un"
+},
+{
+"name": "Fermento biológico de PÃO sache",
+"category": "Lanche",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Gelatina",
+"category": "Lanche",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Goiabada",
+"category": "Lanche",
+"price": 5.89,
+"unit": "un"
+},
+{
+"name": "Ketchup",
+"category": "Lanche",
+"price": 7.59,
+"unit": "un"
+},
+{
+"name": "Leite condensado Zero lac.",
+"category": "Lanche",
+"price": 7.89,
+"unit": "un"
+},
+{
+"name": "Maionese",
+"category": "Lanche",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Milho de pipoca",
+"category": "Lanche",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Molho de pimenta",
+"category": "Lanche",
+"price": 4.39,
+"unit": "un"
+},
+{
+"name": "Bolinho individual Ana Maria Nutella",
+"category": "Lanche",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Pão de forma",
+"category": "Lanche",
+"price": null,
+"unit": "un"
+},
+{
+"name": "RAP 10",
+"category": "Lanche",
+"price": 18.39,
+"unit": "un"
+},
+{
+"name": "Tapioca",
+"category": "Lanche",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Crianças",
+"category": "Lanche",
+"price": 66.05,
+"unit": "un"
+},
+{
+"name": "Abacate",
+"category": "Hortifruti",
+"price": null,
+"unit": "un"
+},
+{
+"name": "abacaxi",
+"category": "Hortifruti",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Alface",
+"category": "Hortifruti",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Chia",
+"category": "Hortifruti",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Alho cabeça",
+"category": "Hortifruti",
+"price": 21.9,
+"unit": "un"
+},
+{
+"name": "Linhaça",
+"category": "Hortifruti",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Ameixa",
+"category": "Hortifruti",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Banana",
+"category": "Hortifruti",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Batata Doce",
+"category": "Hortifruti",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Batata Inglesa máx 5,00",
+"category": "Hortifruti",
+"price": 6.49,
+"unit": "un"
+},
+{
+"name": "Beterraba",
+"category": "Hortifruti",
+"price": 3.99,
+"unit": "un"
+},
+{
+"name": "Brócolis máx. 10,00",
+"category": "Hortifruti",
+"price": 8.99,
+"unit": "un"
+},
+{
+"name": "Cebola máx. 5,00",
+"category": "Hortifruti",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Cenoura máx. 4,00",
+"category": "Hortifruti",
+"price": 4.59,
+"unit": "un"
+},
+{
+"name": "Cheiro verde",
+"category": "Hortifruti",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Inhame",
+"category": "Hortifruti",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Laranja",
+"category": "Hortifruti",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Limão máx 5,00",
+"category": "Hortifruti",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Maça",
+"category": "Hortifruti",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Mamão",
+"category": "Hortifruti",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Mandioca",
+"category": "Hortifruti",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Manga",
+"category": "Hortifruti",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Maracujá",
+"category": "Hortifruti",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Melancia",
+"category": "Hortifruti",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Ovos",
+"category": "Hortifruti",
+"price": 16.9,
+"unit": "un"
+},
+{
+"name": "Pera",
+"category": "Hortifruti",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Pêssego",
+"category": "Hortifruti",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Salsa",
+"category": "Hortifruti",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Tangerina",
+"category": "Hortifruti",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Tomate máx. 8,00",
+"category": "Hortifruti",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Uva",
+"category": "Hortifruti",
+"price": 8.99,
+"unit": "un"
+},
+{
+"name": "Uva Passas",
+"category": "Hortifruti",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Batatinha Congelada",
+"category": "Carnes e Frios",
+"price": 20.9,
+"unit": "un"
+},
+{
+"name": "Carne vermelha",
+"category": "Carnes e Frios",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Danoninho",
+"category": "Carnes e Frios",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Frango peito",
+"category": "Carnes e Frios",
+"price": 17.8,
+"unit": "un"
+},
+{
+"name": "Ervilha congelada",
+"category": "Carnes e Frios",
+"price": 7.39,
+"unit": "un"
+},
+{
+"name": "Frango sobrecoxa",
+"category": "Carnes e Frios",
+"price": 11.99,
+"unit": "un"
+},
+{
+"name": "Coxinha da asa",
+"category": "Carnes e Frios",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Iogurte de Frutas",
+"category": "Carnes e Frios",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Iogurte Natural",
+"category": "Carnes e Frios",
+"price": 2.99,
+"unit": "un"
+},
+{
+"name": "Linguiça",
+"category": "Carnes e Frios",
+"price": 13.89,
+"unit": "un"
+},
+{
+"name": "Mandioca congelada",
+"category": "Carnes e Frios",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Manteiga",
+"category": "Carnes e Frios",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Margarina",
+"category": "Carnes e Frios",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Margarina Zero Lac.",
+"category": "Carnes e Frios",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Mussarela",
+"category": "Carnes e Frios",
+"price": 7.89,
+"unit": "un"
+},
+{
+"name": "Peixe",
+"category": "Carnes e Frios",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Pressunto",
+"category": "Carnes e Frios",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Coração",
+"category": "Carnes e Frios",
+"price": null,
+"unit": "un"
+},
+{
+"name": "creme de ricota",
+"category": "Carnes e Frios",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Requeijão",
+"category": "Carnes e Frios",
+"price": 7.19,
+"unit": "un"
+},
+{
+"name": "Água mineral sem gás",
+"category": "Bebidas",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Água mineral galão 20L",
+"category": "Bebidas",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Água de coco",
+"category": "Bebidas",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Refrigerante 2L",
+"category": "Bebidas",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Refrigerante zero 2L",
+"category": "Bebidas",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Refrigerante lata",
+"category": "Bebidas",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Cerveja lata",
+"category": "Bebidas",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Cerveja long neck",
+"category": "Bebidas",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Vinho tinto",
+"category": "Bebidas",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Espumante",
+"category": "Bebidas",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Suco de caixinha",
+"category": "Bebidas",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Suco integral de uva",
+"category": "Bebidas",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Suco de laranja integral",
+"category": "Bebidas",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Chá pronto",
+"category": "Bebidas",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Energético",
+"category": "Bebidas",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Leite integral cx c/12",
+"category": "Bebidas",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Leite desnatado cx c/12",
+"category": "Bebidas",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Bebida vegetal de aveia",
+"category": "Bebidas",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Leite em pó",
+"category": "Bebidas",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Álcool em gel",
+"category": "Limpeza",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Alvejante sem cloro",
+"category": "Limpeza",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Cloro",
+"category": "Limpeza",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Desengordurante",
+"category": "Limpeza",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Desinfetante lavanda",
+"category": "Limpeza",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Limpa vidros",
+"category": "Limpeza",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Limpa banheiro",
+"category": "Limpeza",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Limpador multiuso",
+"category": "Limpeza",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Limpa alumínio",
+"category": "Limpeza",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Tira manchas",
+"category": "Limpeza",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Detergente em pó",
+"category": "Limpeza",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Sabão em barra",
+"category": "Limpeza",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Amaciante 2L",
+"category": "Limpeza",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Papel alumínio",
+"category": "Limpeza",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Papel manteiga",
+"category": "Limpeza",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Saco para freezer",
+"category": "Limpeza",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Saco de lixo 50L",
+"category": "Limpeza",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Saco de lixo 30L",
+"category": "Limpeza",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Pano multiuso",
+"category": "Limpeza",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Pano de prato",
+"category": "Limpeza",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Luva de borracha",
+"category": "Limpeza",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Guardanapo",
+"category": "Limpeza",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Esponja dupla face",
+"category": "Limpeza",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Desodorante",
+"category": "Higiene Pessoal",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Absorvente",
+"category": "Higiene Pessoal",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Protetor diário",
+"category": "Higiene Pessoal",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Hidratante corporal",
+"category": "Higiene Pessoal",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Protetor solar",
+"category": "Higiene Pessoal",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Enxaguante bucal",
+"category": "Higiene Pessoal",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Cotonete",
+"category": "Higiene Pessoal",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Algodão",
+"category": "Higiene Pessoal",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Lâmina de barbear",
+"category": "Higiene Pessoal",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Creme de barbear",
+"category": "Higiene Pessoal",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Lenço de papel",
+"category": "Higiene Pessoal",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Lenço umedecido",
+"category": "Higiene Pessoal",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Fralda",
+"category": "Higiene Pessoal",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Sabonete infantil",
+"category": "Higiene Pessoal",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Shampoo infantil",
+"category": "Higiene Pessoal",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Talco",
+"category": "Higiene Pessoal",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Acetona",
+"category": "Higiene Pessoal",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Curativo adesivo",
+"category": "Higiene Pessoal",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Água oxigenada",
+"category": "Higiene Pessoal",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Adoçante",
+"category": "Alimentação",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Açúcar mascavo",
+"category": "Alimentação",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Farinha de trigo",
+"category": "Alimentação",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Farinha de rosca",
+"category": "Alimentação",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Macarrão penne",
+"category": "Alimentação",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Macarrão instantâneo",
+"category": "Alimentação",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Massa para lasanha",
+"category": "Alimentação",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Arroz integral",
+"category": "Alimentação",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Arroz parboilizado",
+"category": "Alimentação",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Aveia em flocos",
+"category": "Alimentação",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Granola",
+"category": "Alimentação",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Cereal matinal",
+"category": "Alimentação",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Molho shoyu",
+"category": "Alimentação",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Molho inglês",
+"category": "Alimentação",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Vinagre de maçã",
+"category": "Alimentação",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Caldo de galinha",
+"category": "Alimentação",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Caldo de carne",
+"category": "Alimentação",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Tempero completo",
+"category": "Alimentação",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Colorau",
+"category": "Alimentação",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Orégano",
+"category": "Alimentação",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Pimenta do reino",
+"category": "Alimentação",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Cominho",
+"category": "Alimentação",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Louro",
+"category": "Alimentação",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Canela em pó",
+"category": "Alimentação",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Páprica",
+"category": "Alimentação",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Amendoim",
+"category": "Alimentação",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Castanha de caju",
+"category": "Alimentação",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Mel",
+"category": "Alimentação",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Geleia",
+"category": "Alimentação",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Pasta de amendoim",
+"category": "Alimentação",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Seleta de legumes",
+"category": "Alimentação",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Palmito",
+"category": "Alimentação",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Cogumelo em conserva",
+"category": "Alimentação",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Pepino em conserva",
+"category": "Alimentação",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Tomate pelado",
+"category": "Alimentação",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Biscoito recheado",
+"category": "Lanche",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Biscoito cream cracker",
+"category": "Lanche",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Biscoito de polvilho",
+"category": "Lanche",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Biscoito maisena",
+"category": "Lanche",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Biscoito integral",
+"category": "Lanche",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Chocolate em barra",
+"category": "Lanche",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Bombom",
+"category": "Lanche",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Barra de cereal",
+"category": "Lanche",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Pipoca de micro-ondas",
+"category": "Lanche",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Salgadinho",
+"category": "Lanche",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Paçoca",
+"category": "Lanche",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Doce de leite",
+"category": "Lanche",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Creme de avelã",
+"category": "Lanche",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Chá em sachê",
+"category": "Lanche",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Wafer",
+"category": "Lanche",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Suco em pó",
+"category": "Lanche",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Pão francês",
+"category": "Padaria",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Pão integral",
+"category": "Padaria",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Pão de hambúrguer",
+"category": "Padaria",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Pão de hot dog",
+"category": "Padaria",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Pão de queijo",
+"category": "Padaria",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Baguete",
+"category": "Padaria",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Croissant",
+"category": "Padaria",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Bolo simples",
+"category": "Padaria",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Rosca",
+"category": "Padaria",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Sonho",
+"category": "Padaria",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Broa de milho",
+"category": "Padaria",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Torta salgada",
+"category": "Padaria",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Abóbora",
+"category": "Hortifruti",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Abobrinha",
+"category": "Hortifruti",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Berinjela",
+"category": "Hortifruti",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Pepino",
+"category": "Hortifruti",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Pimentão",
+"category": "Hortifruti",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Repolho",
+"category": "Hortifruti",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Couve",
+"category": "Hortifruti",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Couve-flor",
+"category": "Hortifruti",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Chuchu",
+"category": "Hortifruti",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Vagem",
+"category": "Hortifruti",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Espinafre",
+"category": "Hortifruti",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Rúcula",
+"category": "Hortifruti",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Agrião",
+"category": "Hortifruti",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Cebolinha",
+"category": "Hortifruti",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Hortelã",
+"category": "Hortifruti",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Gengibre",
+"category": "Hortifruti",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Morango",
+"category": "Hortifruti",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Melão",
+"category": "Hortifruti",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Kiwi",
+"category": "Hortifruti",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Goiaba",
+"category": "Hortifruti",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Coco seco",
+"category": "Hortifruti",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Mamão papaia",
+"category": "Hortifruti",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Mandioquinha",
+"category": "Hortifruti",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Milho verde espiga",
+"category": "Hortifruti",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Tomate cereja",
+"category": "Hortifruti",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Cogumelo fresco",
+"category": "Hortifruti",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Carne moída",
+"category": "Carnes e Frios",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Acém",
+"category": "Carnes e Frios",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Patinho",
+"category": "Carnes e Frios",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Alcatra",
+"category": "Carnes e Frios",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Costela",
+"category": "Carnes e Frios",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Bife",
+"category": "Carnes e Frios",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Frango inteiro",
+"category": "Carnes e Frios",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Filé de frango",
+"category": "Carnes e Frios",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Asa de frango",
+"category": "Carnes e Frios",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Peito de peru",
+"category": "Carnes e Frios",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Salsicha",
+"category": "Carnes e Frios",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Bacon",
+"category": "Carnes e Frios",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Mortadela",
+"category": "Carnes e Frios",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Salame",
+"category": "Carnes e Frios",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Queijo prato",
+"category": "Carnes e Frios",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Queijo minas",
+"category": "Carnes e Frios",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Queijo parmesão ralado",
+"category": "Carnes e Frios",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Cream cheese",
+"category": "Carnes e Frios",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Iogurte grego",
+"category": "Carnes e Frios",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Leite fermentado",
+"category": "Carnes e Frios",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Nata",
+"category": "Carnes e Frios",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Creme de leite fresco",
+"category": "Carnes e Frios",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Filé de tilápia",
+"category": "Carnes e Frios",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Camarão",
+"category": "Carnes e Frios",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Hambúrguer",
+"category": "Carnes e Frios",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Empanado de frango",
+"category": "Carnes e Frios",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Pão de queijo congelado",
+"category": "Carnes e Frios",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Pizza congelada",
+"category": "Carnes e Frios",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Lasanha congelada",
+"category": "Carnes e Frios",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Sorvete",
+"category": "Carnes e Frios",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Polpa de fruta",
+"category": "Carnes e Frios",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Massa de pastel",
+"category": "Carnes e Frios",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Linguiça calabresa",
+"category": "Carnes e Frios",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Lâmpada LED",
+"category": "Cuidados com a Casa",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Pilha AA",
+"category": "Cuidados com a Casa",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Pilha AAA",
+"category": "Cuidados com a Casa",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Vela",
+"category": "Cuidados com a Casa",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Isqueiro",
+"category": "Cuidados com a Casa",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Inseticida aerossol",
+"category": "Cuidados com a Casa",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Repelente",
+"category": "Cuidados com a Casa",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Aromatizador de ambiente",
+"category": "Cuidados com a Casa",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Vassoura",
+"category": "Cuidados com a Casa",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Rodo",
+"category": "Cuidados com a Casa",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Pá de lixo",
+"category": "Cuidados com a Casa",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Balde",
+"category": "Cuidados com a Casa",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Pano de chão",
+"category": "Cuidados com a Casa",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Flanela",
+"category": "Cuidados com a Casa",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Saco de aspirador",
+"category": "Cuidados com a Casa",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Fita adesiva",
+"category": "Cuidados com a Casa",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Cola",
+"category": "Cuidados com a Casa",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Fita isolante",
+"category": "Cuidados com a Casa",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Naftalina",
+"category": "Cuidados com a Casa",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Ração cachorro",
+"category": "Outros",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Ração gato",
+"category": "Outros",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Areia sanitária",
+"category": "Outros",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Petisco pet",
+"category": "Outros",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Copo descartável",
+"category": "Outros",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Prato descartável",
+"category": "Outros",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Talher descartável",
+"category": "Outros",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Vela de aniversário",
+"category": "Outros",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Caderno",
+"category": "Outros",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Caneta",
+"category": "Outros",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Lápis",
+"category": "Outros",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Cola bastão",
+"category": "Outros",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Presente",
+"category": "Outros",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Cartão de aniversário",
+"category": "Outros",
+"price": null,
+"unit": "un"
+},
+{
+"name": "Flores",
+"category": "Outros",
+"price": null,
+"unit": "un"
+}
+],
+"currentList": [
+{
+"name": "Agua Mineral c/ gás",
+"qty": 12
+},
+{
+"name": "Leite litro cx c/12 zero lac.",
+"qty": 2
+},
+{
+"name": "Água sanitária",
+"qty": 1
+},
+{
+"name": "Amaciante pequeno azul",
+"qty": 1
+},
+{
+"name": "Buchinha de pia pct",
+"qty": 1
+},
+{
+"name": "Desinfetante LIMÃO unicfr",
+"qty": 1
+},
+{
+"name": "Detergente uni.",
+"qty": 6
+},
+{
+"name": "Esponja de aço",
+"qty": 2
+},
+{
+"name": "Fósforo",
+"qty": 1
+},
+{
+"name": "Papel toalha",
+"qty": 2
+},
+{
+"name": "Sabão em pó cx.",
+"qty": 1
+},
+{
+"name": "Sapólio Líquido (CIF)",
+"qty": 1
+},
+{
+"name": "Cif limpeza profissional",
+"qty": 1
+},
+{
+"name": "Creme dental",
+"qty": 3
+},
+{
+"name": "CREME CABELO SOFIA",
+"qty": 1
+},
+{
+"name": "Papel Higiênico pct",
+"qty": 1
+},
+{
+"name": "Sabonete 1 pct",
+"qty": 1
+},
+{
+"name": "Açúcar 2kg",
+"qty": 2
+},
+{
+"name": "Arroz 5kg",
+"qty": 1
+},
+{
+"name": "Atum",
+"qty": 6
+},
+{
+"name": "Extrato de tomate",
+"qty": 3
+},
+{
+"name": "MIX Farinha de Arroz",
+"qty": 2
+},
+{
+"name": "Farinha de mandioca",
+"qty": 1
+},
+{
+"name": "Feijão",
+"qty": 2
+},
+{
+"name": "Feijão Preto",
+"qty": 1
+},
+{
+"name": "Grão de Bico pct",
+"qty": 1
+},
+{
+"name": "Macarrão Espaguete",
+"qty": 2
+},
+{
+"name": "Macarrão Parafuso",
+"qty": 4
+},
+{
+"name": "Milho verde lata",
+"qty": 2
+},
+{
+"name": "Molho de tomate",
+"qty": 4
+},
+{
+"name": "Óleo de cozinha",
+"qty": 2
+},
+{
+"name": "Sal",
+"qty": 1
+},
+{
+"name": "Granulado ou gotas de chocolate",
+"qty": 1
+},
+{
+"name": "Cacau ou chocolate em pó",
+"qty": 1
+},
+{
+"name": "Achocolatado",
+"qty": 2
+},
+{
+"name": "Leite de coco",
+"qty": 1
+},
+{
+"name": "Café soluvel",
+"qty": 1
+},
+{
+"name": "Coco ralado pct. 200g",
+"qty": 1
+},
+{
+"name": "Creme de leite Zero lac.",
+"qty": 4
+},
+{
+"name": "Fermento químico em pó tipo ROYAL",
+"qty": 2
+},
+{
+"name": "Fermento biológico de PÃO sache",
+"qty": 4
+},
+{
+"name": "Goiabada",
+"qty": 1
+},
+{
+"name": "Ketchup",
+"qty": 1
+},
+{
+"name": "Leite condensado Zero lac.",
+"qty": 4
+},
+{
+"name": "Alho cabeça",
+"qty": 3
+},
+{
+"name": "Batata Inglesa máx 5,00",
+"qty": 8
+},
+{
+"name": "Beterraba",
+"qty": 4
+},
+{
+"name": "Brócolis máx. 10,00",
+"qty": 1
+},
+{
+"name": "Cebola máx. 5,00",
+"qty": 6
+},
+{
+"name": "Cenoura máx. 4,00",
+"qty": 4
+},
+{
+"name": "Laranja",
+"qty": 6
+},
+{
+"name": "Limão máx 5,00",
+"qty": 6
+},
+{
+"name": "Ovos",
+"qty": 2
+},
+{
+"name": "Tomate máx. 8,00",
+"qty": 6
+},
+{
+"name": "Uva",
+"qty": 1
+},
+{
+"name": "Uva Passas",
+"qty": 1
+},
+{
+"name": "Batatinha Congelada",
+"qty": 1
+},
+{
+"name": "Frango peito",
+"qty": 4
+},
+{
+"name": "Ervilha congelada",
+"qty": 1
+},
+{
+"name": "Frango sobrecoxa",
+"qty": 4
+},
+{
+"name": "Iogurte Natural",
+"qty": 1
+},
+{
+"name": "Linguiça",
+"qty": 2
+},
+{
+"name": "Mussarela",
+"qty": 2
+},
+{
+"name": "Peixe",
+"qty": 1
+},
+{
+"name": "Coração",
+"qty": 1
+},
+{
+"name": "Requeijão",
+"qty": 1
+}
+],
+"originalCount": 137
+}
