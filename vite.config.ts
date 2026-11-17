@@ -26,7 +26,11 @@ export default defineConfig({
           { src: 'icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
         ],
       },
-      workbox: { navigateFallback: 'index.html', globPatterns: ['**/*.{js,css,html,svg,png,woff2}'] },
+      workbox: {
+        navigateFallback: 'index.html', globPatterns: ['**/*.{js,css,html,svg,png,woff2}'], globIgnores: ['tesseract/**'],
+        // O leitor de cupom (arquivos grandes) fica guardado no aparelho depois do primeiro uso, para funcionar sem internet.
+        runtimeCaching: [{ urlPattern: ({ url }) => url.pathname.includes('/tesseract/'), handler: 'CacheFirst', options: { cacheName: 'ocr', expiration: { maxEntries: 10 } } }],
+      },
     }),
   ],
 })

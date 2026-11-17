@@ -1,4 +1,4 @@
-import { activeList, itemsOf, live, type ImportRow } from './store'
+import { activeList, displayName, itemsOf, live, type ImportRow } from './store'
 import { clean, norm } from './util'
 
 /** Só lê a planilha. Nada é gravado aqui: a gravação acontece depois da conferência. */
@@ -27,7 +27,7 @@ export async function exportWorkbook() {
   const XLSX = await import('xlsx')
   const wb = XLSX.utils.book_new()
   const prods = live('products').sort((a, b) => a.category.localeCompare(b.category) || a.name.localeCompare(b.name))
-  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(prods.map(p => ({ Categoria: p.category, Produto: p.name, Unidade: p.unit, 'Preço': p.price }))), 'Base de Produtos')
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(prods.map(p => ({ Categoria: p.category, Produto: displayName(p), Unidade: p.unit, 'Preço': p.price }))), 'Base de Produtos')
   const al = activeList()
   const cur = al ? itemsOf(al.id) : []
   XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(cur.map(i => ({ Tipo: i.category, ITEM: i.name, QTD: i.qty, Un: i.unit, OK: i.checked, 'P. UNIT. estimado': i.est_price, 'P. UNIT. pago': i.paid_price }))), 'Lista atual')

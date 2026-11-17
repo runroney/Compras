@@ -3,7 +3,7 @@ export const TABLES: Table[] = ['categories', 'products', 'lists', 'list_items',
 
 export interface Base { id: string; household_id: string; updated_at: string; deleted: boolean; synced_at?: string }
 export interface Category extends Base { name: string; color: string; sort: number }
-export interface Product extends Base { name: string; category: string; unit: string; price: number | null }
+export interface Product extends Base { name: string; category: string; unit: string; price: number | null; brand?: string | null; presentation?: string | null }
 export interface List extends Base { name: string; status: 'active' | 'archived'; created_at: string; archived_at: string | null }
 export interface ListItem extends Base {
   list_id: string; product_id: string | null; name: string; category: string

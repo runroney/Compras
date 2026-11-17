@@ -56,7 +56,12 @@ function supabaseRemote(): Remote {
     },
     async push(table, rows) {
       for (let i = 0; i < rows.length; i += 200) {
-        const chunk = rows.slice(i, i + 200).map(({ synced_at, ...r }: any) => r)
+        const chunk = rows.slice(i, i + 200).map(({ synced_at, ...r }: any) => {
+          // marca/apresentação só viajam quando existem (assim o app segue sincronizando antes do SQL novo ser rodado)
+          if (r.brand == null) delete r.brand
+          if (r.presentation == null) delete r.presentation
+          return r
+        })
         const { error } = await sb.from(table).upsert(chunk, { onConflict: 'id' })
         if (error) throw new Error(error.message)
       }

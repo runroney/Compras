@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useState, type ReactNode } from 'react'
+import { lazy, Suspense, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { configured } from './remote'
 import {
-  activeList, addItem, applyImport, cartLevel, categoriesSorted, createHousehold, findProduct, itemsOf, joinHousehold, lastOfficialAt, lineEst, live, moveCategory,
+  activeList, addItem, applyImport, cartLevel, categoriesSorted, createHousehold, displayName, findProduct, itemsOf, joinHousehold, lastOfficialAt, lineEst, live, moveCategory,
   newList, officialOf, planImport, signIn, signOut, signUp, softDelete, syncNow, toggleItem, totals, upsert, uid, useApp,
   type ImportLine, type ImportResult,
 } from './store'
@@ -21,6 +21,8 @@ export default function App() {
   if (!s.household) return <HouseholdSetup />
   return <Shell />
 }
+
+const CupomFlow = lazy(() => import('./Cupom')) // câmera + leitor de texto só carregam quando usados
 
 function Setup() {
   return <div className="auth"><h1>Falta configurar</h1><p>O app ainda não está ligado ao banco na nuvem. Siga o passo a passo do README (Supabase) e gere o app de novo com as duas chaves.</p></div>
@@ -177,12 +179,12 @@ function AddSheet({ onClose }: { onClose: () => void }) {
   const cats = categoriesSorted()
   const sugg = useMemo(() => {
     const n = norm(q); if (!n) return []
-    const all = live('products').filter(p => norm(p.name).includes(n))
-    return all.sort((a, b) => (norm(a.name).startsWith(n) ? 0 : 1) - (norm(b.name).startsWith(n) ? 0 : 1) || a.name.localeCompare(b.name)).slice(0, 8)
+    const all = live('products').filter(p => norm(displayName(p)).includes(n))
+    return all.sort((a, b) => (norm(displayName(a)).startsWith(n) ? 0 : 1) - (norm(displayName(b)).startsWith(n) ? 0 : 1) || displayName(a).localeCompare(displayName(b))).slice(0, 8)
   }, [q])
   const exact = q ? findProduct(q) : undefined
   const choose = (p: Product | null, name?: string) => {
-    setPicked(p); if (p) { setQ(p.name); setCat(p.category); setUnit(p.unit); setPrice(p.price != null ? String(p.price).replace('.', ',') : '') }
+    setPicked(p); if (p) { setQ(displayName(p)); setCat(p.category); setUnit(p.unit); setPrice(p.price != null ? String(p.price).replace('.', ',') : '') }
     else { setQ(name ?? q); setCat(cats.find(c => c.name === 'Outros')?.name ?? cats[0]?.name ?? 'Outros') }
   }
   const showForm = picked || (cat && q)
@@ -195,7 +197,7 @@ function AddSheet({ onClose }: { onClose: () => void }) {
   return <Sheet title="Adicionar item" onClose={onClose}>
     <input className="search" style={{ margin: 0, width: '100%' }} autoFocus placeholder="Digite para buscar ou cadastrar" value={q} onChange={e => { setQ(e.target.value); setPicked(null); setCat('') }} />
     {!showForm && q && <div className="sug">
-      {sugg.map(p => <button key={p.id} onClick={() => choose(p)}>{p.name}<small>{p.category}</small></button>)}
+      {sugg.map(p => <button key={p.id} onClick={() => choose(p)}>{displayName(p)}<small>{p.category}</small></button>)}
       {!exact && <button style={{ color: 'var(--g)', fontWeight: 700 }} onClick={() => choose(null, clean(q))}>+ Cadastrar "{clean(q)}" como novo</button>}
     </div>}
     {showForm && <>
@@ -246,8 +248,8 @@ function ProductsScreen() {
   useApp()
   const [q, setQ] = useState(''); const [edit, setEdit] = useState<string | 'new' | null>(null)
   const cats = categoriesSorted()
-  const prods = live('products').filter(p => !q || norm(p.name).includes(norm(q)))
-  const byCat = cats.map(c => ({ c, its: prods.filter(p => p.category === c.name).sort((a, b) => a.name.localeCompare(b.name)) }))
+  const prods = live('products').filter(p => !q || norm(displayName(p)).includes(norm(q)))
+  const byCat = cats.map(c => ({ c, its: prods.filter(p => p.category === c.name).sort((a, b) => displayName(a).localeCompare(displayName(b))) }))
   const orphan = prods.filter(p => !cats.some(c => c.name === p.category))
   if (orphan.length) byCat.push({ c: { id: 'o', name: 'Sem categoria', color: '#ccc' } as any, its: orphan })
   return <>
@@ -257,41 +259,52 @@ function ProductsScreen() {
       {byCat.filter(g => g.its.length).map(({ c, its }) => <div key={c.id}>
         <div className="cat"><span>{c.name}</span><span>{its.length}</span></div>
         {its.map(p => <div key={p.id} className="it" style={{ ['--c' as any]: c.color }} onClick={() => setEdit(p.id)} data-testid="prod">
-          <div className="mid"><div className="nm">{p.name}</div></div><div className="val">{p.price != null ? brl(p.price) : ''}</div></div>)}
+          <div className="mid"><div className="nm">{displayName(p)}</div></div><div className="val">{p.price != null ? brl(p.price) : ''}</div></div>)}
       </div>)}
     </div>
-    {edit && <ProductSheet id={edit} onClose={() => setEdit(null)} />}
+    {edit && <ProductSheet key={edit} id={edit} onClose={() => setEdit(null)} onVariant={pid => setEdit('var:' + pid)} />}
   </>
 }
 
-function ProductSheet({ id, onClose }: { id: string | 'new'; onClose: () => void }) {
+function ProductSheet({ id, onClose, onVariant }: { id: string | 'new'; onClose: () => void; onVariant?: (id: string) => void }) {
   const s = useApp()
-  const p = id === 'new' ? undefined : s.tables.products[id]
+  const isVar = id.startsWith('var:')
+  const src = isVar ? s.tables.products[id.slice(4)] : undefined   // "nova apresentação": parte de um produto existente
+  const p = id === 'new' || isVar ? undefined : s.tables.products[id]
+  const base = p ?? src
   const cats = categoriesSorted()
-  const [name, setName] = useState(p?.name ?? ''); const [cat, setCat] = useState(p?.category ?? 'Outros')
-  const [unit, setUnit] = useState(p?.unit ?? 'un')
-  const dup = name && findProduct(name) && findProduct(name)!.id !== p?.id
+  const [name, setName] = useState(base?.name ?? ''); const [cat, setCat] = useState(base?.category ?? 'Outros')
+  const [unit, setUnit] = useState(base?.unit ?? 'un')
+  const [brand, setBrand] = useState(base?.brand ?? ''); const [pres, setPres] = useState(p?.presentation ?? '')
+  const full = displayName({ name: clean(name), brand, presentation: pres })
+  const found = full ? findProduct(full) : undefined
+  const dup = !!found && found.id !== p?.id
   const hist = p ? live('price_history').filter(h => h.product_id === p.id).sort((a, b) => b.at.localeCompare(a.at)).slice(0, 8) : []
   const offAt = p ? lastOfficialAt(p.id) : null
+  // Só grava marca/apresentação quando há valor (ou para limpar um valor antigo), para não mexer em produtos que não usam isso.
+  const opt = (v: string, old?: string | null) => clean(v) || (old ? '' : undefined)
   const save = () => {
     const nm = clean(name); if (!nm || dup) return
     if (p) {
-      upsert('products', { ...p, name: nm, category: cat, unit }) // o preço oficial não muda por aqui
-
+      upsert('products', { ...p, name: nm, category: cat, unit, brand: opt(brand, p.brand), presentation: opt(pres, p.presentation) }) // o preço oficial não muda por aqui
       // mantém os itens da lista atual coerentes com a categoria/nome
-      const al = activeList(); if (al) itemsOf(al.id).filter(i => i.product_id === p.id).forEach(i => upsert('list_items', { ...i, name: nm, category: cat }))
-    } else upsert('products', { id: uid(), name: nm, category: cat, unit, price: null })
+      const al = activeList(); if (al) itemsOf(al.id).filter(i => i.product_id === p.id).forEach(i => upsert('list_items', { ...i, name: full, category: cat }))
+    } else upsert('products', { id: uid(), name: nm, category: cat, unit, price: null, brand: opt(brand), presentation: opt(pres) })
     onClose()
   }
-  return <Sheet title={p ? 'Editar produto' : 'Novo produto'} onClose={onClose}>
-    <label className="lbl">Nome</label><input className="field" value={name} onChange={e => setName(e.target.value)} autoFocus={!p} />
-    {dup && <div className="err">Já existe um produto com esse nome.</div>}
+  return <Sheet title={p ? 'Editar produto' : isVar ? 'Nova apresentação' : 'Novo produto'} onClose={onClose}>
+    {isVar && <div className="meta" style={{ marginBottom: 6 }}>Mesmo produto em outra embalagem. Cada apresentação tem o seu próprio preço oficial e não é comparada com as outras.</div>}
+    <label className="lbl">Nome</label><input className="field" value={name} onChange={e => setName(e.target.value)} autoFocus={!p && !isVar} />
+    <div className="row"><div><label className="lbl">Marca (opcional)</label><input className="field" value={brand} onChange={e => setBrand(e.target.value)} data-testid="brand" /></div>
+      <div><label className="lbl">Apresentação</label><input className="field" placeholder="ex.: 5 kg" value={pres} onChange={e => setPres(e.target.value)} data-testid="pres" autoFocus={isVar} /></div></div>
+    {dup && <div className="err">Já existe esse produto com a mesma marca e apresentação.</div>}
     <label className="lbl">Categoria</label><select className="field" value={cat} onChange={e => setCat(e.target.value)}>{cats.map(c => <option key={c.id}>{c.name}</option>)}</select>
     <div className="row"><div><label className="lbl">Unidade padrão</label><select className="field" value={unit} onChange={e => setUnit(e.target.value)}>{UNITS.map(u => <option key={u}>{u}</option>)}</select></div>
-      <div><label className="lbl">Preço oficial{offAt ? ` (${new Date(offAt).toLocaleDateString('pt-BR')})` : ''}</label><input className="field" value={p?.price != null ? String(p.price).replace('.', ',') : ''} placeholder="sem preço" readOnly data-testid="official-field" /></div></div>
-    <button className="btn" disabled={!clean(name) || !!dup} onClick={save}>Salvar</button>
+      <div><label className="lbl">Preço oficial{offAt ? ` (${new Date(offAt).toLocaleDateString('pt-BR')})` : ''}</label><input className="field" value={p?.price != null ? p.price.toFixed(2).replace('.', ',') : ''} placeholder="sem preço" readOnly data-testid="official-field" /></div></div>
+    <button className="btn" disabled={!clean(name) || dup} onClick={save}>Salvar</button>
     {p && <button className="btn sec" onClick={() => { addItem({ name: p.name, category: p.category, qty: 1, unit: p.unit, price: p.price, productId: p.id }); onClose() }}>Adicionar à lista atual</button>}
-    {p && <button className="btn danger" onClick={() => { if (confirm(`Excluir "${p.name}" da base de produtos?`)) { softDelete('products', p.id); onClose() } }}>Excluir produto</button>}
+    {p && onVariant && <button className="btn sec" data-testid="new-pres" onClick={() => onVariant(p.id)}>Nova apresentação deste produto</button>}
+    {p && <button className="btn danger" onClick={() => { if (confirm(`Excluir "${displayName(p)}" da base de produtos?`)) { softDelete('products', p.id); onClose() } }}>Excluir produto</button>}
     {hist.length > 0 && <><label className="lbl" style={{ marginTop: 18 }}>Histórico de preços</label>
       {hist.map(h => <div key={h.id} className="line"><span>{new Date(h.at).toLocaleDateString('pt-BR')} <span className="pill">{h.kind}</span></span><b>{brl(h.price)}</b></div>)}</>}
   </Sheet>
@@ -385,6 +398,8 @@ function SettingsSheet({ onClose }: { onClose: () => void }) {
     setImp(null)
     setMsg(`Importação concluída: ${r.lidos} linhas lidas, ${r.ignorados} desmarcadas, ${r.novos} produtos novos, ${r.oficiais} preços oficiais atualizados${r.soHistorico ? `, ${r.soHistorico} só no histórico (mais antigos que o oficial atual)` : ''}${r.jaRegistrados ? `, ${r.jaRegistrados} já registrados` : ''}, ${r.estimativas} estimativas alteradas, ${r.naLista} itens novos na lista.`)
   }
+  const [cupom, setCupom] = useState(false)
+  if (cupom) return <Suspense fallback={<div className="empty">Carregando…</div>}><CupomFlow onClose={() => setCupom(false)} onDone={m => { setCupom(false); setMsg(m) }} /></Suspense>
   if (imp) return <ImportSheet lines={imp} onCancel={() => setImp(null)} onDone={done} />
   return <Sheet title="Ajustes" onClose={onClose}>
     <div className="line"><span>Conta</span><b>{s.session?.email}</b></div>
@@ -400,6 +415,8 @@ function SettingsSheet({ onClose }: { onClose: () => void }) {
     <label className="lbl" style={{ marginTop: 18 }}>Planilha</label>
     <label className="btn sec" style={{ cursor: 'pointer' }}>Importar planilha (.xlsx)<input type="file" accept=".xlsx,.xls" hidden onChange={e => { void onFile(e.target.files?.[0]); e.target.value = '' }} /></label>
     <button className="btn sec" onClick={() => void exportWorkbook()}>Exportar tudo para Excel</button>
+    <label className="lbl" style={{ marginTop: 18 }}>Cupom fiscal</label>
+    <button className="btn sec" data-testid="open-cupom" onClick={() => setCupom(true)}>Atualizar preços por cupom (vídeo)</button>
     {msg && <div className="meta" style={{ marginTop: 10 }} data-testid="importmsg">{msg}</div>}
     <button className="btn danger" onClick={async () => { if (Object.keys(s.dirty).length && !confirm('Há alterações ainda não sincronizadas neste aparelho. Sair mesmo assim?')) return; await signOut() }}>Sair da conta</button>
   </Sheet>

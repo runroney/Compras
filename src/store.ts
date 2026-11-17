@@ -195,7 +195,10 @@ export const officialOf = (productId: string | null | undefined): number | null 
   (productId ? state.tables.products[productId]?.price : null) ?? null
 export const lastOfficialAt = (productId: string): string | null =>
   live('price_history').filter(h => h.product_id === productId && h.kind === 'oficial').reduce<string | null>((m, h) => (!m || h.at > m ? h.at : m), null)
-export const findProduct = (name: string) => live('products').find(p => norm(p.name) === norm(name))
+/** Nome completo: produto + marca + apresentação (ex.: "Arroz Camil 5 kg"). Sem marca/apresentação é só o nome de sempre. */
+export const displayName = (p: { name: string; brand?: string | null; presentation?: string | null }) =>
+  [p.name, p.brand, p.presentation].map(x => clean(x ?? '')).filter(Boolean).join(' ')
+export const findProduct = (name: string) => live('products').find(p => norm(displayName(p)) === norm(name))
 
 export function ensureList() {
   let l = activeList()
@@ -211,7 +214,7 @@ export function addItem(p: { name: string; category: string; qty: number; unit: 
   const dup = itemsOf(list.id).find(i => i.product_id === product!.id)
   if (dup) return upsert('list_items', { ...dup, qty: dup.qty + p.qty, checked: false }) // mesmo produto: soma
   return upsert('list_items', {
-    id: uid(), list_id: list.id, product_id: product.id, name: product.name, category: product.category,
+    id: uid(), list_id: list.id, product_id: product.id, name: displayName(product), category: product.category,
     qty: p.qty, unit: p.unit, est_price: p.price ?? product.price, paid_price: null, checked: false, sort: Date.now(),
   })
 }
@@ -285,6 +288,16 @@ export function addOfficialPrice(productId: string, price: number, atISO: string
   return 'atualizado'
 }
 
+/** Confirmação do cupom: grava os preços oficiais marcados (e o histórico). Nada é gravado antes disto. */
+export function applyCupom(rows: { productId: string; unit: number }[], date: string) {
+  const at = atFromDate(date); const rep = { atualizados: 0, soHistorico: 0, jaRegistrados: 0 }
+  for (const r of rows) {
+    const x = addOfficialPrice(r.productId, r.unit, at)
+    if (x === 'atualizado') rep.atualizados++; else if (x === 'historico') rep.soHistorico++; else rep.jaRegistrados++
+  }
+  return rep
+}
+
 // ---------- importação de Excel revisada ----------
 export interface ImportLine { key: number; row: ImportRow; product: Product | null; category: string; catFallback: boolean }
 export interface ImportResult { lidos: number; novos: number; oficiais: number; soHistorico: number; jaRegistrados: number; estimativas: number; naLista: number; ignorados: number }
@@ -323,7 +336,7 @@ export function applyImport(lines: ImportLine[], o: { mode: 'estimate' | 'offici
     if (on) {
       if (o.mode === 'estimate' && price != null && on.est_price !== price) { upsert('list_items', { ...on, est_price: price }); rep.estimativas++ }
     } else if (l.row.qty && l.row.qty > 0) {
-      upsert('list_items', { id: uid(), list_id: list.id, product_id: p.id, name: p.name, category: p.category, qty: l.row.qty, unit: p.unit, est_price: est, paid_price: null, checked: false, sort: Date.now() })
+      upsert('list_items', { id: uid(), list_id: list.id, product_id: p.id, name: displayName(p), category: p.category, qty: l.row.qty, unit: p.unit, est_price: est, paid_price: null, checked: false, sort: Date.now() })
       rep.naLista++
     }
   }
