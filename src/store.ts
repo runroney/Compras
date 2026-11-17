@@ -3,7 +3,7 @@ import { useSyncExternalStore } from 'react'
 import { remote } from './remote'
 import { TABLES } from './types'
 import type { AnyRow, Household, RowOf, Session, Table } from './types'
-import { now, uid, norm, clean } from './util'
+import { now, uid, norm, clean, brl } from './util'
 import type { Product } from './types'
 
 type Tables = { [T in Table]: Record<string, RowOf<T>> }
@@ -189,7 +189,18 @@ export const totals = (items: ReturnType<typeof itemsOf>) => ({
 })
 /** Limites fixos de alerta do carrinho. */
 export const LIMITS = [800, 900, 1000] as const
-export const cartLevel = (cart: number): 0 | 800 | 900 | 1000 => (cart >= 1000 ? 1000 : cart >= 900 ? 900 : cart >= 800 ? 800 : 0)
+export const BUDGET = 1000
+/**
+ * Alerta de orçamento. A previsão final já soma o carrinho com a estimativa do que falta, então ela traz o efeito
+ * líquido de todos os preços: itens mais caros empurram para cima, itens mais baratos compensam.
+ * Abaixo de R$ 800 no carrinho não alerta. A partir daí só alerta se a previsão realmente passa de R$ 1.000
+ * (o nível 800, 900 ou 1000 vem do carrinho). Carrinho a partir de R$ 1.000 sempre alerta.
+ */
+export function budgetAlert(spent: number, forecast: number): { level: 800 | 900 | 1000; text: string } | null {
+  if (spent >= BUDGET) return { level: 1000, text: `Orçamento de ${brl(BUDGET)} ultrapassado. Carrinho em ${brl(spent)}` }
+  if (spent < 800 || forecast <= BUDGET) return null
+  return { level: spent >= 900 ? 900 : 800, text: `Carrinho em ${brl(spent)}. Previsão final ${brl(forecast)}, ${brl(forecast - BUDGET)} acima do orçamento` }
+}
 /** Último preço oficial = products.price (só cupom ou Excel revisado e confirmado mexe nele). */
 export const officialOf = (productId: string | null | undefined): number | null =>
   (productId ? state.tables.products[productId]?.price : null) ?? null

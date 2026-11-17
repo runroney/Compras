@@ -1,7 +1,7 @@
 import { lazy, Suspense, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { configured } from './remote'
 import {
-  activeList, addItem, applyImport, cartLevel, categoriesSorted, createHousehold, displayName, findProduct, itemsOf, joinHousehold, lastOfficialAt, lineEst, live, moveCategory,
+  activeList, addItem, applyImport, budgetAlert, categoriesSorted, createHousehold, displayName, findProduct, itemsOf, joinHousehold, lastOfficialAt, lineEst, live, moveCategory,
   newList, officialOf, planImport, signIn, signOut, signUp, softDelete, syncNow, toggleItem, totals, upsert, uid, useApp,
   type ImportLine, type ImportResult,
 } from './store'
@@ -119,9 +119,10 @@ function ListScreen({ openSettings }: { openSettings: () => void }) {
   const orphans = shown.filter(i => !known.has(i.category))
   if (orphans.length) groups.push({ c: { id: 'x', name: 'Outros', color: '#CFD8DC' } as any, its: orphans.sort(byName) })
   const pct = t.total ? Math.round((t.done / t.total) * 100) : 0
-  const level = cartLevel(t.spent)
+  const al = budgetAlert(t.spent, t.forecast)
+  const level = al?.level ?? 0
   const [prevLevel, setPrevLevel] = useState(level)
-  useEffect(() => { if (level > prevLevel) say(alertText(level)); if (level !== prevLevel) setPrevLevel(level) }, [level]) // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { if (al && level > prevLevel) say(al.text); if (level !== prevLevel) setPrevLevel(level) }, [level]) // eslint-disable-line react-hooks/exhaustive-deps
   return <>
     <div className="top">
       <h1><span>Compras do mês</span><span style={{ display: 'flex', gap: 8, alignItems: 'center' }}><SyncChip /><button className="iconbtn" onClick={openSettings} aria-label="Ajustes">⚙</button></span></h1>
@@ -161,14 +162,10 @@ function ListScreen({ openSettings }: { openSettings: () => void }) {
 }
 
 const byName = (a: { name: string }, b: { name: string }) => a.name.localeCompare(b.name, 'pt-BR', { sensitivity: 'base' })
-const alertText = (level: number) => `Carrinho chegou a ${brl(level)}`
 function BudgetAlerts({ spent, forecast }: { spent: number; forecast: number }) {
-  const level = cartLevel(spent)
-  if (!level && forecast <= 1000) return null
-  return <div className="alerts">
-    {level > 0 && <div className={'alert l' + level} data-testid="alert-cart">{level === 1000 && spent > 1000 ? `Carrinho passou de ${brl(1000)}` : alertText(level)}</div>}
-    {forecast > 1000 && <div className="alert l1000" data-testid="alert-forecast">Atenção: a previsão final passa de {brl(1000)}</div>}
-  </div>
+  const al = budgetAlert(spent, forecast)
+  if (!al) return null
+  return <div className="alerts"><div className={'alert l' + al.level} data-testid="alert-cart">{al.text}</div></div>
 }
 
 function AddSheet({ onClose }: { onClose: () => void }) {
