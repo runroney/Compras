@@ -65,8 +65,8 @@ button,input,select{font:inherit;color:inherit}
 .pill{font-size:11px;background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:2px 8px;color:var(--mu)}
 
 
-.nm.up{color:var(--warn)}.nm.down{color:var(--g)}
-@media (prefers-color-scheme:dark){.nm.up{color:#ff8a7a}.nm.down{color:#5fd3a2}}
+.val.lv{color:var(--tx)}.val.lv.up{color:var(--warn)}.val.lv.down{color:var(--g)}
+@media (prefers-color-scheme:dark){.val.lv.up{color:#ff8a7a}.val.lv.down{color:#5fd3a2}}
 .alerts{display:flex;flex-direction:column;gap:4px;margin-top:8px}
 .alert{font-size:12px;font-weight:700;padding:5px 10px;border-radius:8px}
 .alert.l800{background:#f5c542;color:#3a2f00}.alert.l900{background:#f39c12;color:#2b1a00}.alert.l1000{background:#c0392b;color:#fff}

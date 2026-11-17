@@ -146,10 +146,10 @@ function ListScreen({ openSettings }: { openSettings: () => void }) {
           return <div key={i.id} className={'it' + (i.checked ? ' done' : '')} style={{ ['--c' as any]: c.color }} data-testid="item">
             <button className="cb" onClick={() => toggleItem(i.id)} aria-label={i.checked ? 'Desmarcar' : 'Marcar como comprado'}>{i.checked ? '✓' : ''}</button>
             <div className="mid" onClick={() => setEdit(i.id)}>
-              <div className={'nm' + cmp}>{i.name}</div>
+              <div className="nm">{i.name}</div>
               <div className="meta">{fmtQty(i.qty)} {i.unit}{i.est_price != null ? ` × ${brl(i.est_price)}` : ' · sem preço'}{i.paid_price != null ? ` · pago ${brl(i.paid_price)}` : ''}</div>
             </div>
-            <div className="val">{i.est_price != null ? brl(lineEst(i)) : ''}</div>
+            <div className={'val lv' + cmp} data-testid="lineval">{i.est_price != null ? brl(lineEst(i)) : ''}</div>
           </div>
         })}
       </div>)}
