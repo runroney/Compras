@@ -9,7 +9,7 @@ export interface ListItem extends Base {
   list_id: string; product_id: string | null; name: string; category: string
   qty: number; unit: string; est_price: number | null; paid_price: number | null; checked: boolean; sort: number
 }
-export interface PriceHistory extends Base { product_id: string | null; product_name: string; price: number; kind: 'pago' | 'estimado'; at: string }
+export interface PriceHistory extends Base { product_id: string | null; product_name: string; price: number; kind: 'pago' | 'estimado' | 'oficial'; at: string }
 
 export type RowOf<T extends Table> = T extends 'categories' ? Category : T extends 'products' ? Product
   : T extends 'lists' ? List : T extends 'list_items' ? ListItem : PriceHistory

@@ -1,11 +1,11 @@
-import { activeList, itemsOf, live, importRows, type ImportReport, type ImportRow } from './store'
+import { activeList, itemsOf, live, type ImportRow } from './store'
 import { clean, norm } from './util'
 
-export async function importWorkbook(file: File): Promise<ImportReport> {
+/** Só lê a planilha. Nada é gravado aqui: a gravação acontece depois da conferência. */
+export async function readWorkbook(file: File): Promise<ImportRow[]> {
   const XLSX = await import('xlsx')
   const wb = XLSX.read(await file.arrayBuffer(), { type: 'array' })
   const rows: ImportRow[] = []
-  let withQty = false
   for (const name of wb.SheetNames) {
     const data = XLSX.utils.sheet_to_json<any[]>(wb.Sheets[name], { header: 1, defval: null })
     if (!data.length) continue
@@ -17,11 +17,10 @@ export async function importWorkbook(file: File): Promise<ImportReport> {
       const nm = r[cItem]; if (nm == null || clean(String(nm)) === '') continue
       const q = cQty >= 0 ? Number(r[cQty]) : NaN
       const pr = cPrice >= 0 ? Number(r[cPrice]) : NaN
-      if (cQty >= 0) withQty = true
       rows.push({ category: cCat >= 0 && r[cCat] ? String(r[cCat]) : 'Outros', name: String(nm), price: Number.isFinite(pr) && r[cPrice] !== null && r[cPrice] !== '' ? pr : null, qty: Number.isFinite(q) && q > 0 ? q : null })
     }
   }
-  return importRows(rows, { addToList: withQty })
+  return rows
 }
 
 export async function exportWorkbook() {

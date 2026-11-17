@@ -4,6 +4,7 @@ import { remote } from './remote'
 import { TABLES } from './types'
 import type { AnyRow, Household, RowOf, Session, Table } from './types'
 import { now, uid, norm, clean } from './util'
+import type { Product } from './types'
 
 type Tables = { [T in Table]: Record<string, RowOf<T>> }
 export interface State {
@@ -184,7 +185,16 @@ export const totals = (items: ReturnType<typeof itemsOf>) => ({
   done: items.filter(i => i.checked).length,
   total: items.length,
   noPrice: items.filter(i => i.est_price == null).length,
+  forecast: items.reduce((s, i) => s + (i.checked ? lineSpent(i) : lineEst(i)), 0), // carrinho + estimativa do que falta
 })
+/** Limites fixos de alerta do carrinho. */
+export const LIMITS = [800, 900, 1000] as const
+export const cartLevel = (cart: number): 0 | 800 | 900 | 1000 => (cart >= 1000 ? 1000 : cart >= 900 ? 900 : cart >= 800 ? 800 : 0)
+/** Último preço oficial = products.price (só cupom ou Excel revisado e confirmado mexe nele). */
+export const officialOf = (productId: string | null | undefined): number | null =>
+  (productId ? state.tables.products[productId]?.price : null) ?? null
+export const lastOfficialAt = (productId: string): string | null =>
+  live('price_history').filter(h => h.product_id === productId && h.kind === 'oficial').reduce<string | null>((m, h) => (!m || h.at > m ? h.at : m), null)
 export const findProduct = (name: string) => live('products').find(p => norm(p.name) === norm(name))
 
 export function ensureList() {
@@ -196,29 +206,14 @@ export function addItem(p: { name: string; category: string; qty: number; unit: 
   const list = ensureList()
   const name = clean(p.name)
   let product = p.productId ? state.tables.products[p.productId] : findProduct(name)
-  if (!product || product.deleted) {
-    product = upsert('products', { id: uid(), name, category: p.category, unit: p.unit, price: p.price })
-  } else if (p.price != null && p.price !== product.price) {
-    recordPrice(product.id, product.name, p.price, 'estimado')
-    product = upsert('products', { ...product, price: p.price })
-  }
+  // Produto novo nasce sem preço oficial. O preço digitado aqui vale só como estimativa do item.
+  if (!product || product.deleted) product = upsert('products', { id: uid(), name, category: p.category, unit: p.unit, price: null })
   const dup = itemsOf(list.id).find(i => i.product_id === product!.id)
   if (dup) return upsert('list_items', { ...dup, qty: dup.qty + p.qty, checked: false }) // mesmo produto: soma
   return upsert('list_items', {
     id: uid(), list_id: list.id, product_id: product.id, name: product.name, category: product.category,
-    qty: p.qty, unit: p.unit, est_price: product.price, paid_price: null, checked: false, sort: Date.now(),
+    qty: p.qty, unit: p.unit, est_price: p.price ?? product.price, paid_price: null, checked: false, sort: Date.now(),
   })
-}
-export function recordPrice(productId: string | null, name: string, price: number, kind: 'pago' | 'estimado') {
-  upsert('price_history', { id: uid(), product_id: productId, product_name: name, price, kind, at: now() })
-}
-export function setPaid(itemId: string, paid: number | null) {
-  const it = state.tables.list_items[itemId]; if (!it) return
-  upsert('list_items', { ...it, paid_price: paid })
-  if (paid != null && it.product_id) {
-    const pr = state.tables.products[it.product_id]
-    if (pr && pr.price !== paid) { recordPrice(pr.id, pr.name, paid, 'pago'); upsert('products', { ...pr, price: paid }) }
-  }
 }
 export function toggleItem(id: string) {
   const it = state.tables.list_items[id]; if (it) upsert('list_items', { ...it, checked: !it.checked })
@@ -233,18 +228,9 @@ export function newList(opts: { copyFrom?: string | 'current'; onlyPending?: boo
   for (const i of src) {
     if (opts.onlyPending && i.checked) continue
     const pr = i.product_id ? state.tables.products[i.product_id] : undefined
-    upsert('list_items', { ...i, id: uid(), list_id: nl.id, checked: false, paid_price: null, est_price: pr?.price ?? i.paid_price ?? i.est_price, sort: i.sort })
+    upsert('list_items', { ...i, id: uid(), list_id: nl.id, checked: false, paid_price: null, est_price: pr?.price ?? i.est_price, sort: i.sort })
   }
   return nl
-}
-/** Grava a nova ordem de uma categoria. Itens escondidos por filtro ficam onde estavam; só os visíveis trocam de lugar entre si. */
-export function reorderItems(category: string, visibleIds: string[]) {
-  const list = activeList(); if (!list) return
-  const all = itemsOf(list.id).filter(i => i.category === category).sort((a, b) => a.sort - b.sort || a.name.localeCompare(b.name))
-  const vis = new Set(visibleIds)
-  const queue = visibleIds.filter(id => all.some(i => i.id === id))
-  const final = all.map(i => (vis.has(i.id) ? state.tables.list_items[queue.shift()!] : i))
-  final.forEach((it, idx) => { if (it && it.sort !== idx * 1024) upsert('list_items', { ...it, sort: idx * 1024 }) })
 }
 export function moveCategory(id: string, dir: -1 | 1) {
   const cats = categoriesSorted(); const i = cats.findIndex(c => c.id === id); const j = i + dir
@@ -277,6 +263,68 @@ export function importRows(rows: ImportRow[], opts: { categories?: { name: strin
         upsert('list_items', { id: uid(), list_id: list.id, product_id: p.id, name: p.name, category: p.category, qty: r.qty, unit: p.unit, est_price: p.price, paid_price: null, checked: false, sort: itemsOf(list.id).length * 1024 })
         rep.naLista++
       }
+    }
+  }
+  return rep
+}
+
+// ---------- preço oficial (só cupom ou Excel revisado e confirmado) ----------
+const atFromDate = (d: string) => (!d || d === now().slice(0, 10) ? now() : new Date(d + 'T12:00:00').toISOString())
+/**
+ * Grava um preço oficial confirmado. Sempre entra no histórico (sem duplicar: mesmo produto, preço e dia).
+ * Só vira o preço oficial atual se a data não for mais antiga que a última confirmação já registrada.
+ */
+export function addOfficialPrice(productId: string, price: number, atISO: string): 'atualizado' | 'historico' | 'duplicado' {
+  const p = state.tables.products[productId]; if (!p) return 'duplicado'
+  const hist = live('price_history').filter(h => h.product_id === productId && h.kind === 'oficial')
+  if (hist.some(h => h.price === price && h.at.slice(0, 10) === atISO.slice(0, 10))) return 'duplicado'
+  const latest = hist.reduce<string | null>((m, h) => (!m || h.at > m ? h.at : m), null)
+  upsert('price_history', { id: uid(), product_id: p.id, product_name: p.name, price, kind: 'oficial', at: atISO })
+  if (latest && atISO < latest) return 'historico'
+  if (p.price !== price) upsert('products', { ...p, price })
+  return 'atualizado'
+}
+
+// ---------- importação de Excel revisada ----------
+export interface ImportLine { key: number; row: ImportRow; product: Product | null; category: string; catFallback: boolean }
+export interface ImportResult { lidos: number; novos: number; oficiais: number; soHistorico: number; jaRegistrados: number; estimativas: number; naLista: number; ignorados: number }
+/** Monta a conferência sem gravar nada. Não cria categorias: categoria desconhecida cai em "Outros". */
+export function planImport(rows: ImportRow[]): ImportLine[] {
+  const cats = categoriesSorted()
+  const fallback = cats.find(c => norm(c.name) === 'outros')?.name ?? cats[0]?.name ?? 'Outros'
+  const seen = new Set<string>(); const out: ImportLine[] = []
+  rows.forEach(r => {
+    const name = clean(r.name); const k = norm(name); if (!name || seen.has(k)) return
+    seen.add(k)
+    const product = findProduct(name) ?? null
+    const found = cats.find(c => norm(c.name) === norm(r.category || ''))
+    out.push({ key: out.length, row: { ...r, name }, product, category: product?.category ?? found?.name ?? fallback, catFallback: !product && !found })
+  })
+  return out
+}
+/** Grava somente as linhas marcadas. Modo 'estimate' nunca toca no preço oficial. */
+export function applyImport(lines: ImportLine[], o: { mode: 'estimate' | 'official'; date: string; keep: Set<number> }): ImportResult {
+  const rep: ImportResult = { lidos: lines.length, novos: 0, oficiais: 0, soHistorico: 0, jaRegistrados: 0, estimativas: 0, naLista: 0, ignorados: 0 }
+  const at = atFromDate(o.date)
+  for (const l of lines) {
+    if (!o.keep.has(l.key)) { rep.ignorados++; continue }
+    const price = l.row.price
+    let p = l.product ? state.tables.products[l.product.id] : undefined
+    if (!p || p.deleted) { p = upsert('products', { id: uid(), name: l.row.name, category: l.category, unit: 'un', price: null }); rep.novos++ }
+    if (o.mode === 'official' && price != null) {
+      const r = addOfficialPrice(p.id, price, at)
+      if (r === 'atualizado') rep.oficiais++; else if (r === 'historico') rep.soHistorico++; else rep.jaRegistrados++
+      p = state.tables.products[p.id]
+    }
+    const est = o.mode === 'estimate' ? (price ?? p.price) : p.price
+    const list = (l.row.qty || (o.mode === 'estimate' && price != null)) ? ensureList() : undefined
+    if (!list) continue
+    const on = itemsOf(list.id).find(i => i.product_id === p!.id)
+    if (on) {
+      if (o.mode === 'estimate' && price != null && on.est_price !== price) { upsert('list_items', { ...on, est_price: price }); rep.estimativas++ }
+    } else if (l.row.qty && l.row.qty > 0) {
+      upsert('list_items', { id: uid(), list_id: list.id, product_id: p.id, name: p.name, category: p.category, qty: l.row.qty, unit: p.unit, est_price: est, paid_price: null, checked: false, sort: Date.now() })
+      rep.naLista++
     }
   }
   return rep
