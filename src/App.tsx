@@ -141,15 +141,17 @@ function ListScreen({ openSettings }: { openSettings: () => void }) {
       {groups.filter(g => g.its.length).map(({ c, its }) => <div key={c.id} data-grp={c.name}>
         <div className="cat"><span>{c.name}</span><span>{its.filter(i => i.checked).length}/{its.length}</span></div>
         {its.map(i => {
+          // Preço unitário atual = o informado no mercado (pago), se houver; senão a estimativa. Compara sempre unitário x unitário.
           const off = officialOf(i.product_id)
-          const cmp = off != null && i.est_price != null && Math.abs(i.est_price - off) > 0.004 ? (i.est_price > off ? ' up' : ' down') : ''
+          const cur = i.paid_price ?? i.est_price
+          const cmp = off != null && cur != null && Math.abs(cur - off) > 0.004 ? (cur > off ? ' up' : ' down') : ''
           return <div key={i.id} className={'it' + (i.checked ? ' done' : '')} style={{ ['--c' as any]: c.color }} data-testid="item">
             <button className="cb" onClick={() => toggleItem(i.id)} aria-label={i.checked ? 'Desmarcar' : 'Marcar como comprado'}>{i.checked ? '✓' : ''}</button>
             <div className="mid" onClick={() => setEdit(i.id)}>
               <div className="nm">{i.name}</div>
               <div className="meta">{fmtQty(i.qty)} {i.unit}{i.est_price != null ? ` × ${brl(i.est_price)}` : ' · sem preço'}{i.paid_price != null ? ` · pago ${brl(i.paid_price)}` : ''}</div>
             </div>
-            <div className={'val lv' + cmp} data-testid="lineval">{i.est_price != null ? brl(lineEst(i)) : ''}</div>
+            <div className={'val lv' + cmp} data-testid="lineval">{i.paid_price != null ? brl(i.paid_price * i.qty) : i.est_price != null ? brl(lineEst(i)) : ''}</div>
           </div>
         })}
       </div>)}
