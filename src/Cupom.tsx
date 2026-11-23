@@ -1,16 +1,18 @@
 // Atualizar preços oficiais por cupom em vídeo: gravar, ler, conferir e só então confirmar.
 // As imagens ficam apenas na memória durante o processamento e são descartadas (nada é guardado).
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { applyCupom, displayName, live, useApp } from './store'
-import { mergeFrames, parseFrame, sizesOf, suggest, type CupomFrame } from './cupom'
+import { categoriesSorted, confirmCupom, displayName, findProduct, live, useApp } from './store'
+import { mergeFrames, parseDesc, parseFrame, sizesOf, suggest, type CupomFrame } from './cupom'
 import { readFrame, stopWorker } from './ocr'
-import { brl, fmtQty, num } from './util'
+import { brl, clean, fmtQty, num } from './util'
 
 const MAX_FRAMES = 24
 const MAX_PHOTOS = 30
 
 type Grab = { blob: Blob; sharp: number }
-type Row = { key: number; include: boolean; desc: string; productId: string; qty: string; unit: string; lido: number | null; hint: string[] }
+type Novo = { name: string; brand: string; presentation: string; category: string }
+const NOVO = '__novo'
+type Row = { novo: Novo | null; key: number; include: boolean; desc: string; productId: string; qty: string; unit: string; lido: number | null; hint: string[] }
 
 /** Nitidez: variância do laplaciano (quanto maior, mais nítido o texto). */
 function sharpness(g: Uint8ClampedArray, w: number, h: number) {
@@ -116,10 +118,10 @@ export default function CupomFlow({ onClose, onDone }: { onClose: () => void; on
     finally { top.length = 0 }
     if (cancelled.current) return
     const m = mergeFrames(parsed)
-    const cat = live('products').map(p => ({ id: p.id, name: p.name, brand: p.brand, presentation: p.presentation }))
+    const cat = live('products').map(p => ({ id: p.id, name: p.name, brand: p.brand, presentation: p.presentation, aliases: p.aliases }))
     const rows: Row[] = m.items.map((it, key) => {
       const s = suggest(it.desc, cat)
-      return { key, include: s.auto && it.ok && (it.unit ?? 0) > 0, desc: it.desc, productId: s.auto ? s.list[0].id : '', qty: fmtQty(it.qty), unit: it.unit != null ? it.unit.toFixed(2).replace('.', ',') : '', lido: it.total, hint: s.list.length && !s.auto ? ['sugestão não é segura, confira'] : [] }
+      return { novo: null, key, include: s.auto && it.ok && (it.unit ?? 0) > 0, desc: it.desc, productId: s.auto ? s.list[0].id : '', qty: fmtQty(it.qty), unit: it.unit != null ? it.unit.toFixed(2).replace('.', ',') : '', lido: it.total, hint: s.list.length && !s.auto ? ['sugestão não é segura, confira'] : [] }
     })
     setResult({ rows, total: m.total, date: m.date })
     await stopWorker()
@@ -213,11 +215,15 @@ function Review({ init, onCancel, onAgain, onDone }: { init: { rows: Row[]; tota
   const today = new Date().toISOString().slice(0, 10)
   const [date, setDate] = useState(init.date && init.date <= today ? init.date : today)
   const prods = useMemo(() => live('products').sort((a, b) => displayName(a).localeCompare(displayName(b), 'pt-BR', { sensitivity: 'base' })), [])
-  const cat = useMemo(() => prods.map(p => ({ id: p.id, name: p.name, brand: p.brand, presentation: p.presentation })), [prods])
+  const cat = useMemo(() => prods.map(p => ({ id: p.id, name: p.name, brand: p.brand, presentation: p.presentation, aliases: p.aliases })), [prods])
+  const cats = categoriesSorted()
+  const brands = useMemo(() => [...new Set(prods.map(p => clean(p.brand ?? '')).filter(Boolean))], [prods])
+  const novoOk = (r: Row) => !!r.novo && !!clean(r.novo.name) && !findProduct(displayName(r.novo))
+  const rowOk = (r: Row) => r.include && (num(r.unit) ?? 0) > 0 && (r.productId === NOVO ? novoOk(r) : !!r.productId)
   const byId = (id: string) => prods.find(p => p.id === id)
   const set = (k: number, p: Partial<Row>) => setRows(r => r.map(x => (x.key === k ? { ...x, ...p } : x)))
   const sum = rows.reduce((s, r) => s + (num(r.qty) ?? 0) * (num(r.unit) ?? 0), 0)
-  const valid = rows.filter(r => r.include && r.productId && (num(r.unit) ?? 0) > 0)
+  const valid = rows.filter(rowOk)
   return <div className="sheet" style={{ maxHeight: '92vh' }} role="dialog" aria-label="Conferir cupom" data-testid="review">
     <h2>Conferir cupom<button className="x" onClick={onCancel} aria-label="Fechar">×</button></h2>
     <div className="meta" style={{ marginBottom: 8 }}>Nada é gravado até você confirmar. Corrija o que estiver errado e desmarque o que não quiser atualizar.</div>
@@ -228,7 +234,7 @@ function Review({ init, onCancel, onAgain, onDone }: { init: { rows: Row[]; tota
     <label className="lbl">Data do cupom</label><input className="field" type="date" value={date} max={today} onChange={e => setDate(e.target.value)} />
     {rows.length === 0 && <div className="empty" style={{ padding: '18px 0' }}>Não consegui ler nenhum item. Tente de novo mais perto, com boa luz e passando devagar.</div>}
     {rows.map(r => {
-      const p = r.productId ? byId(r.productId) : undefined
+      const p = r.productId && r.productId !== NOVO ? byId(r.productId) : undefined
       const off = p?.price ?? null; const u = num(r.unit)
       const sg = suggest(r.desc, cat).list
       const csz = sizesOf(r.desc), psz = p ? sizesOf(displayName(p)) : []
@@ -239,11 +245,23 @@ function Review({ init, onCancel, onAgain, onDone }: { init: { rows: Row[]; tota
         <label style={{ display: 'flex', gap: 8, alignItems: 'flex-start', fontWeight: 700 }}>
           <input type="checkbox" checked={r.include} onChange={e => set(r.key, { include: e.target.checked })} style={{ marginTop: 4 }} />{r.desc}</label>
         <select className="field" style={{ marginTop: 6 }} value={r.productId} data-testid="cupom-prod"
-          onChange={e => set(r.key, { productId: e.target.value, include: !!e.target.value && (u ?? 0) > 0 })}>
+          onChange={e => { const v = e.target.value; set(r.key, v === NOVO ? { productId: v, include: (u ?? 0) > 0, novo: r.novo ?? { ...parseDesc(r.desc, brands), category: cats.find(c => c.name === 'Outros')?.name ?? cats[0]?.name ?? 'Outros' } } : { productId: v, include: !!v && (u ?? 0) > 0 }) }}>
           <option value="">Sem produto (não atualizar)</option>
+          <option value={NOVO}>+ Criar produto novo com este item</option>
           {sg.length > 0 && <optgroup label="Sugestões">{sg.map(s => { const q = byId(s.id); return q ? <option key={'s' + s.id} value={s.id}>{displayName(q)}</option> : null })}</optgroup>}
           <optgroup label="Todos os produtos">{prods.map(q => <option key={q.id} value={q.id}>{displayName(q)}</option>)}</optgroup>
         </select>
+        {r.productId === NOVO && r.novo && <div data-testid="novo-form" style={{ background: 'var(--bg2, rgba(127,127,127,.08))', borderRadius: 10, padding: 10, margin: '8px 0' }}>
+          <div className="meta" style={{ marginBottom: 4 }}>Novo produto: confira o nome por extenso, a marca e a apresentação. Ele só é criado quando você confirmar o cupom.</div>
+          <label className="lbl">Nome</label><input className="field" value={r.novo.name} data-testid="novo-name" onChange={e => set(r.key, { novo: { ...r.novo!, name: e.target.value } })} />
+          <div className="row">
+            <div><label className="lbl">Marca</label><input className="field" value={r.novo.brand} data-testid="novo-brand" onChange={e => set(r.key, { novo: { ...r.novo!, brand: e.target.value } })} /></div>
+            <div><label className="lbl">Apresentação</label><input className="field" value={r.novo.presentation} data-testid="novo-pres" onChange={e => set(r.key, { novo: { ...r.novo!, presentation: e.target.value } })} /></div>
+          </div>
+          <label className="lbl">Categoria</label><select className="field" value={r.novo.category} onChange={e => set(r.key, { novo: { ...r.novo!, category: e.target.value } })}>{cats.map(c => <option key={c.id}>{c.name}</option>)}</select>
+          {!!r.novo.name && !!findProduct(displayName(r.novo)) && <div className="err">Já existe esse produto no cadastro. Escolha ele na lista acima.</div>}
+          <div className="meta">Vai aparecer na lista como: <b>{displayName(r.novo) || '...'}</b></div>
+        </div>}
         <div className="row">
           <div><label className="lbl">Quantidade</label><input className="field" inputMode="decimal" value={r.qty} onChange={e => set(r.key, { qty: e.target.value })} /></div>
           <div><label className="lbl">Preço unitário</label><input className="field" inputMode="decimal" value={r.unit} data-testid="cupom-unit" onChange={e => set(r.key, { unit: e.target.value })} /></div>
@@ -255,7 +273,7 @@ function Review({ init, onCancel, onAgain, onDone }: { init: { rows: Row[]; tota
       </div>
     })}
     <button className="btn" data-testid="cupom-confirm" disabled={!valid.length || !date}
-      onClick={() => { const rep = applyCupom(valid.map(r => ({ productId: r.productId, unit: num(r.unit)! })), date); onDone(`Cupom confirmado: ${rep.atualizados} preços oficiais atualizados${rep.soHistorico ? `, ${rep.soHistorico} só no histórico (cupom mais antigo que o oficial atual)` : ''}${rep.jaRegistrados ? `, ${rep.jaRegistrados} já registrados` : ''}. ${rows.length - valid.length} itens não foram usados.`) }}>
+      onClick={() => { const rep = confirmCupom(valid.map(r => ({ productId: r.productId === NOVO ? '' : r.productId, novo: r.productId === NOVO ? r.novo : null, desc: r.desc, unit: num(r.unit)! })), date); onDone(`Cupom confirmado: ${rep.criados ? `${rep.criados} produto${rep.criados === 1 ? '' : 's'} novo${rep.criados === 1 ? '' : 's'} criado${rep.criados === 1 ? '' : 's'}, ` : ''}${rep.atualizados} preços oficiais atualizados${rep.soHistorico ? `, ${rep.soHistorico} só no histórico (cupom mais antigo que o oficial atual)` : ''}${rep.jaRegistrados ? `, ${rep.jaRegistrados} já registrados` : ''}. ${rows.length - valid.length} itens não foram usados.`) }}>
       Confirmar e atualizar {valid.length} preço{valid.length === 1 ? '' : 's'} oficial{valid.length === 1 ? '' : 'is'}</button>
     <button className="btn sec" onClick={onAgain}>Ler outro cupom</button>
     <button className="btn sec" data-testid="cupom-cancel" onClick={onCancel}>Cancelar (nada é gravado)</button>

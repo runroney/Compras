@@ -154,10 +154,10 @@ export function mergeFrames(frames: CupomFrame[]): { items: Merged[]; total: num
 }
 
 // ---------- sugerir produto do catálogo ----------
-export interface CatalogProduct { id: string; name: string; brand?: string | null; presentation?: string | null }
+export interface CatalogProduct { id: string; name: string; brand?: string | null; presentation?: string | null; aliases?: string | null }
 export interface Suggestion { id: string; score: number; sizeMismatch: boolean }
 const STOP = new Set(['de', 'da', 'do', 'das', 'dos', 'com', 'sem', 'para', 'por', 'tipo', 'cx', 'pct', 'un', 'und', 'uni', 'unid', 'unidade', 'pacote', 'caixa', 'kg', 'g', 'ml', 'l'])
-const toks = (s: string) => flat(s).split(' ').filter(t => t.length >= 2 && !/^\d+$/.test(t) && !STOP.has(t) && !/^\d+(kg|g|gr|ml|l|lt)$/.test(t))
+const toks = (s: string) => flat(s).split(' ').filter(t => t.length >= 2 && !/^\d+$/.test(t) && !STOP.has(t) && !/^t\d$/.test(t) && !/^\d+(kg|g|gr|ml|l|lt|un|und)$/.test(t))
 const isSubseq = (t: string, q: string) => { let i = 0; for (const c of q) if (c === t[i]) i++; return i === t.length }
 function tokScore(t: string, q: string) {
   if (t === q) return 1
@@ -168,7 +168,10 @@ function tokScore(t: string, q: string) {
   return 0
 }
 export function suggest(desc: string, catalog: CatalogProduct[], max = 5): { list: Suggestion[]; auto: boolean } {
-  const ct = toks(desc); const cs = sizesOf(desc)
+  // de/para já confirmado antes: o mesmo texto do cupom aponta direto para o produto
+  const key = aliasKey(desc)
+  if (key) { const hit = catalog.find(p => aliasList(p.aliases).includes(key)); if (hit) return { list: [{ id: hit.id, score: 1, sizeMismatch: false }], auto: true } }
+  const ct = toks(expandAbbr(desc)); const cs = sizesOf(desc)
   const out: Suggestion[] = []
   for (const p of catalog) {
     const full = [p.name, p.brand, p.presentation].filter(Boolean).join(' ')
@@ -184,4 +187,65 @@ export function suggest(desc: string, catalog: CatalogProduct[], max = 5): { lis
   const list = out.slice(0, max)
   const auto = list.length > 0 && list[0].score >= 0.62 && !list[0].sizeMismatch && (list.length < 2 || list[0].score - list[1].score >= 0.06)
   return { list, auto }
+}
+
+// ---------- de/para: apelidos gravados no produto ----------
+/** Texto do cupom em forma comparável (sem acento, minúsculo, sem pontuação). */
+export const aliasKey = (desc: string) => flat(desc)
+export const aliasList = (a: string | null | undefined): string[] => (a ? a.split('|').filter(Boolean) : [])
+export const aliasAdd = (a: string | null | undefined, desc: string): string | null => {
+  const k = aliasKey(desc); if (!k) return a ?? null
+  const l = aliasList(a); if (l.includes(k)) return a ?? null
+  return [...l, k].slice(-12).join('|')
+}
+
+// ---------- abreviações de supermercado ----------
+const ABBR: Record<string, string> = {
+  int: 'integral', integ: 'integral', desnat: 'desnatado', semi: 'semidesnatado', nat: 'natural', trad: 'tradicional', tp: 'tipo',
+  det: 'detergente', deterg: 'detergente', amac: 'amaciante', desinf: 'desinfetante', sab: 'sabão', sabon: 'sabonete', xamp: 'shampoo', sham: 'shampoo', cond: 'condensado',
+  choc: 'chocolate', refri: 'refrigerante', refrig: 'refrigerante', ref: 'refrigerante', bisc: 'biscoito', bolach: 'bolacha', marg: 'margarina', maion: 'maionese',
+  tomat: 'tomate', quei: 'queijo', quej: 'queijo', presun: 'presunto', mort: 'mortadela', ling: 'linguiça', calab: 'calabresa', mac: 'macarrão', macarr: 'macarrão',
+  pap: 'papel', hig: 'higiênico', toalh: 'toalha', fei: 'feijão', carioc: 'carioca', az: 'azeite', ole: 'óleo', sol: 'solúvel', cafe: 'cafe', esp: 'espaguete',
+  ban: 'banana', lar: 'laranja', mam: 'mamao', mel: 'melancia', bat: 'batata', cen: 'cenoura', ceb: 'cebola', alh: 'alho', pc: 'pacote', cx: 'caixa', lt: 'litro',
+  ype: 'ype', moca: 'moca',
+}
+const COND_CTX = /\b(leite|creme|lata|moca)\b/
+/** Troca abreviações pelo nome por extenso para melhorar a comparação com o cadastro. */
+export function expandAbbr(desc: string): string {
+  const f = flat(desc)
+  return f.split(' ').map(t => {
+    if (t === 'cond' && !COND_CTX.test(f)) return 'condicionador'
+    return ABBR[t] ?? t
+  }).join(' ')
+}
+
+// ---------- separar nome, marca e apresentação ----------
+const BRANDS = ['Moça', 'Nestlé', 'Nescafé', 'Camil', 'Tio João', 'Ypê', 'Omo', 'Minuano', 'Veja', 'Downy', 'Comfort', 'Sadia', 'Perdigão', 'Seara', 'Aurora', 'Friboi',
+  'Coca-Cola', 'Pepsi', 'Guaraná Antarctica', 'Kapo', 'Del Valle', 'Tirol', 'Italac', 'Piracanjuba', 'Elegê', 'Parmalat', 'Danone', 'Vigor', 'Nissin', 'Renata', 'Adria',
+  'Fugini', 'Heinz', 'Hellmann\'s', 'Knorr', 'Maggi', 'Dona Benta', 'Lacta', 'Garoto', 'Bauducco', 'Marilan', 'Trakinas', 'Oreo', 'Pantene', 'Dove', 'Rexona', 'Colgate',
+  'Oral-B', 'Protex', 'Palmolive', 'Scott', 'Neve', 'Personal', 'Sempre Livre', 'Intimus', 'Bombril', 'Brilhante', 'Ariel', 'Surf', 'Tixan', 'Lysoform', 'Pato', 'Harpic',
+  'Garnier', 'Nivea', 'Seda', 'Elseve', 'Gillette', 'Kicaldo', 'Prato Fino', 'Broto Legal', 'União', 'Caravelas', 'Pilão', 'Três Corações', 'Melitta', 'Maguary', 'Ades', 'Tang', 'Fresh', 'Qualy', 'Delícia', 'Liza', 'Soya', 'Salada', 'Sazón', 'Yoki', 'Kitano']
+export interface ParsedDesc { name: string; brand: string; presentation: string }
+/** Sugere nome, marca e apresentação a partir do texto abreviado do cupom. O usuário sempre confere e corrige. */
+export function parseDesc(desc: string, extraBrands: string[] = []): ParsedDesc {
+  let f = flat(desc)
+  // apresentação: primeiro tamanho encontrado (395g, 1,5 l, 2un)
+  let presentation = ''
+  const m = /(\d+(?:[.,]\d+)?)\s*(kg|g|gr|ml|l|lt|un|und)\b/.exec(f)
+  if (m) {
+    const u = m[2] === 'gr' ? 'g' : m[2] === 'lt' ? 'l' : m[2] === 'und' ? 'un' : m[2]
+    presentation = `${m[1].replace('.', ',')} ${u === 'l' ? 'L' : u}`
+    f = f.replace(m[0], ' ')
+  }
+  // marca: cadastradas e conhecidas (a mais longa que aparece inteira no texto)
+  let brand = ''
+  const all = [...extraBrands, ...BRANDS].map(b => ({ b, k: flat(b) })).filter(x => x.k).sort((a, b) => b.k.length - a.k.length)
+  for (const { b, k } of all) {
+    const re = new RegExp(`(^| )${k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}( |$)`)
+    if (re.test(f)) { brand = b; f = f.replace(re, ' '); break }
+  }
+  const words = expandAbbr(f).split(' ').filter(t => t && !/^t\d$/.test(t) && !/^\d+$/.test(t) && !['un', 'und', 'kg', 'g', 'ml', 'l'].includes(t))
+  const ACC: Record<string, string> = { cafe: 'café', soluvel: 'solúvel', acucar: 'açúcar', feijao: 'feijão', macarrao: 'macarrão', linguica: 'linguiça', sabao: 'sabão', oleo: 'óleo', agua: 'água', pao: 'pão', maca: 'maçã', limao: 'limão', iogurte: 'iogurte', higienico: 'higiênico' }
+  const name = words.map(w => ACC[w] ?? w).join(' ').replace(/\s+/g, ' ').trim()
+  return { name: name ? name[0].toUpperCase() + name.slice(1) : '', brand, presentation }
 }

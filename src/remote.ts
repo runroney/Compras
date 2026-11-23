@@ -60,6 +60,7 @@ function supabaseRemote(): Remote {
           // marca/apresentação só viajam quando existem (assim o app segue sincronizando antes do SQL novo ser rodado)
           if (r.brand == null) delete r.brand
           if (r.presentation == null) delete r.presentation
+          if (r.aliases == null) delete r.aliases // de/para: só viaja depois do SQL novo (migration_v3)
           return r
         })
         const { error } = await sb.from(table).upsert(chunk, { onConflict: 'id' })

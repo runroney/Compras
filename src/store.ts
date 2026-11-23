@@ -5,6 +5,7 @@ import { TABLES } from './types'
 import type { AnyRow, Household, RowOf, Session, Table } from './types'
 import { now, uid, norm, clean, brl } from './util'
 import type { Product } from './types'
+import { aliasAdd } from './cupom'
 
 type Tables = { [T in Table]: Record<string, RowOf<T>> }
 export interface State {
@@ -307,6 +308,31 @@ export function applyCupom(rows: { productId: string; unit: number }[], date: st
     if (x === 'atualizado') rep.atualizados++; else if (x === 'historico') rep.soHistorico++; else rep.jaRegistrados++
   }
   return rep
+}
+
+/** Confirma o cupom: cria os produtos novos pedidos na conferência, grava o de/para (apelido do texto do cupom) e atualiza os oficiais. */
+export interface CupomPick { productId: string; novo?: { name: string; brand: string; presentation: string; category: string } | null; desc: string; unit: number }
+export function confirmCupom(rows: CupomPick[], date: string) {
+  const ids: { productId: string; unit: number }[] = []
+  let criados = 0
+  for (const r of rows) {
+    let id = r.productId
+    if (r.novo) {
+      const nm = clean(r.novo.name); if (!nm) continue
+      const full = displayName({ name: nm, brand: r.novo.brand, presentation: r.novo.presentation })
+      let p = findProduct(full)
+      if (!p) {
+        p = upsert('products', { id: uid(), name: nm, category: r.novo.category || 'Outros', unit: 'un', price: null,
+          brand: clean(r.novo.brand) || undefined, presentation: clean(r.novo.presentation) || undefined }); criados++
+      }
+      id = p.id
+    }
+    const p = state.tables.products[id]; if (!p) continue
+    const al = aliasAdd(p.aliases, r.desc)
+    if (al !== (p.aliases ?? null)) upsert('products', { ...p, aliases: al })
+    ids.push({ productId: id, unit: r.unit })
+  }
+  return { ...applyCupom(ids, date), criados }
 }
 
 // ---------- importação de Excel revisada ----------
