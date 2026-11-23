@@ -9,7 +9,7 @@ import { exportWorkbook, readWorkbook } from './io'
 import seed from './seed.json'
 import { importRows } from './store'
 import type { ListItem, Product } from './types'
-import { UNITS, brl, clean, fmtQty, norm, num } from './util'
+import { UNITS, brl, clean, fmtQty, maskMoney, norm, num, toMask } from './util'
 
 type Tab = 'lista' | 'produtos' | 'historico' | 'resumo'
 
@@ -142,7 +142,8 @@ function ListScreen({ openSettings }: { openSettings: () => void }) {
         <div className="cat"><span>{c.name}</span><span>{its.filter(i => i.checked).length}/{its.length}</span></div>
         {its.map(i => {
           // Preço unitário atual = o informado no mercado (pago), se houver; senão a estimativa. Compara sempre unitário x unitário.
-          const off = officialOf(i.product_id)
+          // Base da comparação: preço oficial; sem oficial, o preço de referência (estimado) digitado no item.
+          const off = officialOf(i.product_id) ?? i.est_price
           const cur = i.paid_price ?? i.est_price
           const cmp = off != null && cur != null && Math.abs(cur - off) > 0.004 ? (cur > off ? ' up' : ' down') : ''
           return <div key={i.id} className={'it' + (i.checked ? ' done' : '')} style={{ ['--c' as any]: c.color }} data-testid="item">
@@ -218,8 +219,8 @@ function ItemSheet({ id, onClose }: { id: string; onClose: () => void }) {
   const it = useApp().tables.list_items[id] as ListItem | undefined
   const [qty, setQty] = useState(it ? String(it.qty).replace('.', ',') : '1')
   const [unit, setUnit] = useState(it?.unit ?? 'un')
-  const [est, setEst] = useState(it?.est_price != null ? String(it.est_price).replace('.', ',') : '')
-  const [paid, setPaidS] = useState(it?.paid_price != null ? String(it.paid_price).replace('.', ',') : '')
+  const [est, setEst] = useState(toMask(it?.est_price))
+  const [paid, setPaidS] = useState(toMask(it?.paid_price))
   if (!it) return null
   const off = officialOf(it.product_id)
   const save = () => {
@@ -233,10 +234,10 @@ function ItemSheet({ id, onClose }: { id: string; onClose: () => void }) {
       <div><label className="lbl">Unidade</label><select className="field" style={{ height: 50 }} value={unit} onChange={e => setUnit(e.target.value)}>{UNITS.map(u => <option key={u}>{u}</option>)}</select></div>
     </div>
     <div className="row">
-      <div><label className="lbl">Preço estimado (un.)</label><input className="field" inputMode="decimal" value={est} onChange={e => setEst(e.target.value)} /></div>
-      <div><label className="lbl">Preço pago (un.)</label><input className="field" inputMode="decimal" placeholder="0,00" value={paid} onChange={e => setPaidS(e.target.value)} /></div>
+      <div><label className="lbl">Preço estimado (un.)</label><input className="field" inputMode="numeric" placeholder="0,00" value={est} data-testid="est-field" onChange={e => setEst(maskMoney(e.target.value))} /></div>
+      <div><label className="lbl">Preço pago (un.)</label><input className="field" inputMode="numeric" placeholder="0,00" value={paid} data-testid="paid-field" onChange={e => setPaidS(maskMoney(e.target.value))} /></div>
     </div>
-    <div className="meta" data-testid="official-ref">{off != null ? `Último preço oficial: ${brl(off)}` : 'Sem preço oficial ainda'}</div>
+    <div className="meta" data-testid="official-ref">{off != null ? `Último preço oficial: ${brl(off)}` : 'Sem preço oficial ainda. O preço estimado serve de referência para as cores.'}</div>
     <button className="btn" onClick={save}>Salvar</button>
     <button className="btn danger" onClick={() => { if (confirm(`Remover "${it.name}" da lista? O produto continua na base.`)) { softDelete('list_items', it.id); onClose() } }}>Remover da lista</button>
   </Sheet>
@@ -415,7 +416,7 @@ function SettingsSheet({ onClose }: { onClose: () => void }) {
     <label className="btn sec" style={{ cursor: 'pointer' }}>Importar planilha (.xlsx)<input type="file" accept=".xlsx,.xls" hidden onChange={e => { void onFile(e.target.files?.[0]); e.target.value = '' }} /></label>
     <button className="btn sec" onClick={() => void exportWorkbook()}>Exportar tudo para Excel</button>
     <label className="lbl" style={{ marginTop: 18 }}>Cupom fiscal</label>
-    <button className="btn sec" data-testid="open-cupom" onClick={() => setCupom(true)}>Atualizar preços por cupom (vídeo)</button>
+    <button className="btn sec" data-testid="open-cupom" onClick={() => setCupom(true)}>Atualizar preços por cupom (vídeo ou fotos)</button>
     {msg && <div className="meta" style={{ marginTop: 10 }} data-testid="importmsg">{msg}</div>}
     <button className="btn danger" onClick={async () => { if (Object.keys(s.dirty).length && !confirm('Há alterações ainda não sincronizadas neste aparelho. Sair mesmo assim?')) return; await signOut() }}>Sair da conta</button>
   </Sheet>

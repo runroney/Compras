@@ -7,6 +7,7 @@ import { readFrame, stopWorker } from './ocr'
 import { brl, fmtQty, num } from './util'
 
 const MAX_FRAMES = 24
+const MAX_PHOTOS = 30
 
 type Grab = { blob: Blob; sharp: number }
 type Row = { key: number; include: boolean; desc: string; productId: string; qty: string; unit: string; lido: number | null; hint: string[] }
@@ -24,6 +25,7 @@ function sharpness(g: Uint8ClampedArray, w: number, h: number) {
 export default function CupomFlow({ onClose, onDone }: { onClose: () => void; onDone: (msg: string) => void }) {
   const [phase, setPhase] = useState<'cam' | 'proc' | 'review'>('cam')
   const [err, setErr] = useState('')
+  const [note, setNote] = useState('') // aviso de leitura (não é erro de câmera)
   const [rec, setRec] = useState(false)
   const [count, setCount] = useState(0)
   const [hint, setHint] = useState('')
@@ -37,6 +39,8 @@ export default function CupomFlow({ onClose, onDone }: { onClose: () => void; on
   const lastThumb = useRef<Uint8ClampedArray | null>(null)
   const maxSharp = useRef(0)
   const busy = useRef(false)
+  const vidIn = useRef<HTMLInputElement>(null)
+  const phoIn = useRef<HTMLInputElement>(null)
 
   const stopCam = () => { stream.current?.getTracks().forEach(t => t.stop()); stream.current = null }
   const startCam = async () => {
@@ -57,8 +61,8 @@ export default function CupomFlow({ onClose, onDone }: { onClose: () => void; on
     return () => { cancelled.current = true; if (timer.current) clearInterval(timer.current); stopCam(); frames.current = []; void stopWorker() }
   }, [])
 
-  const grab = async () => {
-    const v = video.current
+  const grab = async (src?: HTMLVideoElement) => {
+    const v = src ?? video.current
     if (!v || !v.videoWidth || busy.current) return
     busy.current = true
     try {
@@ -96,6 +100,10 @@ export default function CupomFlow({ onClose, onDone }: { onClose: () => void; on
     // fica com os quadros mais nítidos (até o limite), na ordem em que foram gravados
     const all = frames.current; frames.current = []
     const top = all.map((f, i) => ({ ...f, i })).filter(f => f.sharp >= maxSharp.current * 0.3).sort((a, b) => b.sharp - a.sharp).slice(0, MAX_FRAMES).sort((a, b) => a.i - b.i)
+    await readAll(top)
+  }
+  /** Lê os quadros (da câmera, de um vídeo ou de fotos), junta tudo e abre a conferência. */
+  const readAll = async (top: Grab[]) => {
     setPhase('proc'); setProg({ i: 0, n: top.length })
     const parsed: CupomFrame[] = []
     try {
@@ -104,7 +112,7 @@ export default function CupomFlow({ onClose, onDone }: { onClose: () => void; on
         setProg({ i: k + 1, n: top.length })
         parsed.push(parseFrame(await readFrame(top[k].blob)))
       }
-    } catch (e: any) { if (!cancelled.current) { setErr('Não consegui ler o cupom: ' + (e?.message ?? e)); setPhase('cam') } return }
+    } catch (e: any) { if (!cancelled.current) { setNote('Não consegui ler o cupom: ' + (e?.message ?? e)); setPhase('cam') } return }
     finally { top.length = 0 }
     if (cancelled.current) return
     const m = mergeFrames(parsed)
@@ -117,27 +125,81 @@ export default function CupomFlow({ onClose, onDone }: { onClose: () => void; on
     await stopWorker()
     setPhase('review')
   }
-  const again = () => { setResult(null); setErr(''); setPhase('cam') }
+  const reset = () => { frames.current = []; lastThumb.current = null; maxSharp.current = 0; setCount(0); setHint('') }
+  /** Vídeo que já existe no aparelho: percorre o arquivo em intervalos e usa os quadros mais nítidos. O arquivo não é guardado. */
+  const pickVideo = async (file: File) => {
+    stopCam(); reset(); setNote(''); setPhase('proc'); setProg({ i: 0, n: 0 })
+    const url = URL.createObjectURL(file)
+    const v = document.createElement('video'); v.muted = true; v.playsInline = true; v.preload = 'auto'; v.src = url
+    try {
+      await new Promise<void>((ok, bad) => { v.onloadeddata = () => ok(); v.onerror = () => bad(new Error('Não consegui abrir esse vídeo.')); setTimeout(() => bad(new Error('Não consegui abrir esse vídeo.')), 20000) })
+      const dur = isFinite(v.duration) && v.duration > 0 ? v.duration : 0
+      const n = dur ? Math.min(60, Math.max(1, Math.floor(dur / 0.6))) : 1
+      for (let k = 0; k < n; k++) {
+        if (cancelled.current) return
+        if (dur) {
+          const t = Math.min(dur - 0.05, (k + 0.5) * (dur / n))
+          await new Promise<void>(ok => { v.onseeked = () => ok(); v.currentTime = Math.max(0, t); setTimeout(ok, 4000) })
+        }
+        setProg({ i: k + 1, n })
+        busy.current = false
+        await grab(v)
+      }
+    } catch (e: any) { setNote(e?.message ?? 'Não consegui abrir esse vídeo.'); setPhase('cam'); return }
+    finally { URL.revokeObjectURL(url); v.removeAttribute('src'); v.load() }
+    if (!frames.current.length) { setNote('Não consegui tirar imagens desse vídeo.'); setPhase('cam'); return }
+    const all = frames.current; frames.current = []
+    const top = all.map((f, i) => ({ ...f, i })).filter(f => f.sharp >= maxSharp.current * 0.3).sort((a, b) => b.sharp - a.sharp).slice(0, MAX_FRAMES).sort((a, b) => a.i - b.i)
+    await readAll(top)
+  }
+  /** Fotos escolhidas (uma ou várias): todas são lidas, na ordem escolhida. Nada é guardado. */
+  const pickPhotos = async (files: File[]) => {
+    stopCam(); reset(); setNote(''); setPhase('proc')
+    const list = files.slice(0, MAX_PHOTOS)
+    const out: Grab[] = []
+    try {
+      for (let k = 0; k < list.length; k++) {
+        setProg({ i: k + 1, n: list.length })
+        const bmp = await createImageBitmap(list[k]).catch(() => null)
+        if (!bmp) continue
+        const w = Math.min(bmp.width, 1600), h = Math.round(bmp.height * w / bmp.width)
+        const c = document.createElement('canvas'); c.width = w; c.height = h
+        c.getContext('2d')!.drawImage(bmp, 0, 0, w, h); bmp.close?.()
+        const blob: Blob | null = await new Promise(r => c.toBlob(r, 'image/jpeg', 0.92)); c.width = c.height = 0
+        if (blob) out.push({ blob, sharp: 1 })
+      }
+    } catch (e: any) { setNote('Não consegui abrir as fotos: ' + (e?.message ?? e)); setPhase('cam'); return }
+    if (!out.length) { setNote('Não consegui abrir essas fotos. Escolha imagens JPG ou PNG.'); setPhase('cam'); return }
+    await readAll(out)
+  }
+  const again = () => { setResult(null); setErr(''); setNote(''); setPhase('cam') }
 
   return <div className="sheetbg" style={{ alignItems: phase === 'cam' ? 'stretch' : 'flex-end', zIndex: 60 }}>
     {phase === 'cam' && <div className="cam" data-testid="cam">
       <video ref={video} playsInline muted autoPlay />
+      <input ref={vidIn} type="file" accept="video/*" hidden data-testid="file-video" onChange={e => { const f = e.target.files?.[0]; e.target.value = ''; if (f) void pickVideo(f) }} />
+      <input ref={phoIn} type="file" accept="image/*" multiple hidden data-testid="file-photos" onChange={e => { const f = Array.from(e.target.files ?? []); e.target.value = ''; if (f.length) void pickPhotos(f) }} />
       <div className="cam-top">
-        <b>Cupom em vídeo</b>
+        <b>Atualizar preços pelo cupom</b>
         <button className="x" onClick={onClose} aria-label="Fechar">×</button>
       </div>
       <div className="cam-bar">
         {err ? <div className="err" style={{ color: '#fff' }}>{err}</div>
           : <div className="meta" style={{ color: '#fff' }}>{rec ? `Gravando... ${count} quadros úteis` : 'Aproxime do cupom, com boa luz e sem sombra. Ao gravar, passe devagar do começo ao fim.'}</div>}
+        {note && <div className="err" data-testid="cam-note" style={{ color: '#fff' }}>{note}</div>}
         {hint && <div className="alert l900" data-testid="cam-hint">{hint}</div>}
         {err ? <button className="btn" onClick={startCam}>Tentar de novo</button>
           : !rec ? <button className="btn" data-testid="rec" onClick={startRec}>Gravar</button>
             : <button className="btn danger" data-testid="stop" onClick={() => void stopRec()}>Parar e ler o cupom</button>}
+        {!rec && <>
+          <button className="btn sec" data-testid="pick-video" onClick={() => vidIn.current?.click()}>Escolher vídeo da galeria</button>
+          <button className="btn sec" data-testid="pick-photos" onClick={() => phoIn.current?.click()}>Escolher fotos (uma ou várias)</button>
+        </>}
       </div>
     </div>}
     {phase === 'proc' && <div className="sheet">
       <h2>Lendo o cupom</h2>
-      <div className="meta" data-testid="proc">Quadro {prog.i} de {prog.n}. Isso pode levar um minuto. Mantenha o app aberto.</div>
+      <div className="meta" data-testid="proc">{prog.n ? `Quadro ${prog.i} de ${prog.n}.` : 'Abrindo o arquivo.'} Isso pode levar um minuto. Mantenha o app aberto.</div>
       <div className="bar" style={{ background: 'var(--bd)', margin: '12px 0' }}><i style={{ width: (prog.n ? (prog.i / prog.n) * 100 : 0) + '%', background: 'var(--g)' }} /></div>
       <button className="btn sec" onClick={() => { cancelled.current = true; onClose() }}>Cancelar</button>
     </div>}
@@ -195,7 +257,7 @@ function Review({ init, onCancel, onAgain, onDone }: { init: { rows: Row[]; tota
     <button className="btn" data-testid="cupom-confirm" disabled={!valid.length || !date}
       onClick={() => { const rep = applyCupom(valid.map(r => ({ productId: r.productId, unit: num(r.unit)! })), date); onDone(`Cupom confirmado: ${rep.atualizados} preços oficiais atualizados${rep.soHistorico ? `, ${rep.soHistorico} só no histórico (cupom mais antigo que o oficial atual)` : ''}${rep.jaRegistrados ? `, ${rep.jaRegistrados} já registrados` : ''}. ${rows.length - valid.length} itens não foram usados.`) }}>
       Confirmar e atualizar {valid.length} preço{valid.length === 1 ? '' : 's'} oficial{valid.length === 1 ? '' : 'is'}</button>
-    <button className="btn sec" onClick={onAgain}>Gravar de novo</button>
+    <button className="btn sec" onClick={onAgain}>Ler outro cupom</button>
     <button className="btn sec" data-testid="cupom-cancel" onClick={onCancel}>Cancelar (nada é gravado)</button>
   </div>
 }

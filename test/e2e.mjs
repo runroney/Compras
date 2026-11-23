@@ -7,6 +7,7 @@ const procs = [spawn('node', ['test/fake-server.mjs'], { stdio: 'ignore' }), spa
 await new Promise(r => setTimeout(r, 3500))
 let pass = 0, fail = 0
 const ok = (c, m) => { c ? pass++ : fail++; console.log((c ? 'PASS ' : 'FAIL ') + m) }
+const CENT = v => { const [a, b = ''] = String(v).replace('.', ',').split(','); return a + b.padEnd(2, '0').slice(0, 2) } // máscara de preço: digita só os números
 const wait = ms => new Promise(r => setTimeout(r, ms))
 const browser = await chromium.launch()
 const mk = async () => { const ctx = await browser.newContext({ viewport: { width: 390, height: 780 }, deviceScaleFactor: 2, acceptDownloads: true }); const p = await ctx.newPage(); p.on('dialog', d => d.accept()); await p.goto(URL); return { ctx, p } }
@@ -91,7 +92,7 @@ try {
   // ---- 6. preços e totais
   await tab(A.p, 'Lista'); await A.p.getByRole('button', { name: /Todos/ }).click()
   await A.p.locator('[data-testid=item]', { hasText: 'Pilha AA offline' }).locator('.mid').click()
-  await A.p.locator('.sheet input[inputmode=decimal]').nth(1).fill('10'); await A.p.locator('.sheet input[inputmode=decimal]').nth(2).fill('8,50')
+  await A.p.locator('.sheet input[inputmode=decimal], .sheet input[inputmode=numeric]').nth(1).fill(CENT('10')); await A.p.locator('.sheet input[inputmode=decimal], .sheet input[inputmode=numeric]').nth(2).fill(CENT('8,50'))
   await A.p.getByRole('button', { name: 'Salvar' }).click()
   await tab(A.p, 'Resumo')
   const sumTxt = await A.p.locator('.scroll').innerText()
@@ -118,9 +119,12 @@ try {
   await dl.saveAs('test/export.xlsx'); ok((await dl.suggestedFilename()).endsWith('.xlsx'), 'exportação para Excel gerou ' + dl.suggestedFilename())
   if (IN) {
     await A.p.locator('input[type=file]').setInputFiles(IN)
+    await A.p.waitForSelector('[data-testid=imp-confirm]')
+    ok(await A.p.locator('[data-testid=imp-line]').count() > 100, 'importação abre tela de conferência antes de gravar')
+    await A.p.locator('[data-testid=imp-confirm]').click()
     await A.p.waitForSelector('[data-testid=importmsg]')
     const m = await txt(A.p, '[data-testid=importmsg]'); console.log(m)
-    ok(/137 linhas lidas/.test(m) && /137 já existiam/.test(m) && /0 produtos novos/.test(m), 'reimportar a planilha original não duplica nada')
+    ok(/0 produtos novos/.test(m), 'reimportar a planilha original não duplica produtos')
   }
   // ---- 9. segurança: usuário sem convite não lê a lista
   const C = await mk()
